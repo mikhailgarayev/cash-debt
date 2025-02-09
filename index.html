@@ -6,12 +6,13 @@
     <title>Wolt Cash Debt Checker Tool</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #F4F6F8;
-            color: #333;
-            text-align: center;
-            padding: 20px;
-        }
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(to right, #e3f2fd, #ffffff);
+    color: #333;
+    text-align: center;
+    padding: 20px;
+}
+
         .container {
             max-width: 600px;
             margin: auto;
@@ -30,21 +31,24 @@
             margin-top: 20px;
         }
         button {
-            background-color: #0078FF;
-            color: white;
-            padding: 12px 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-top: 10px;
-            display: block;
-            transition: 0.3s;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        button:hover {
-            background-color: #005bb5;
-        }
+    background-color: #0078FF;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: 0.3s;
+    box-shadow: 0 4px 8px rgba(0, 120, 255, 0.3);
+}
+
+button:hover {
+    background-color: #005bb5;
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 120, 255, 0.4);
+}
+
         input[type="file"] {
             padding: 10px;
             border: 2px dashed #0078FF;
@@ -59,14 +63,22 @@
             font-size: 16px;
         }
         .courier-box {
-            background: #E3F2FD;
-            padding: 5px;
-            border-radius: 4px;
-            margin: 3px auto;
-            max-width: 300px;
-            text-align: center;
-            font-size: 14px;
-        }
+    background: white;
+    padding: 12px;
+    border-radius: 10px;
+    margin: 5px auto;
+    max-width: 320px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: 0.3s;
+}
+
+.courier-box:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
         a {
             color: #0078FF;
             text-decoration: none;
@@ -93,9 +105,45 @@
             margin-right: auto;
         }
         .dark-mode {
-    background-color: #1e1e1e;
+    background: #121212 !important; /* Тёмный фон */
+    color: white;
+    * {
+    transition: background 0.5s ease, color 0.5s ease;
+}
+}
+
+/* Делаем контейнеры темными */
+.dark-mode .container {
+    background: #1e1e1e;
+    color: white;
+    box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+}
+
+/* Тёмная тема для полей ввода */
+.dark-mode input[type="file"], 
+.dark-mode input[type="text"] {
+    background: #1e1e1e;
+    color: white;
+    border-color: #0078FF;
+}
+
+/* Темный цвет карточек курьеров */
+.dark-mode .courier-box {
+    background: #2c2c2c;
+    border: 1px solid #444;
     color: white;
 }
+
+/* Темные кнопки */
+.dark-mode button {
+    background-color: #333;
+    color: white;
+}
+
+.dark-mode button:hover {
+    background-color: #444;
+}
+
 
 .dark-mode .container {
     background: #2c2c2c;
@@ -184,7 +232,7 @@ input:checked + .slider:before {
     display: flex; /* Располагаем кнопки в один ряд */
     justify-content: center; /* Выравниваем их по центру */
     flex-wrap: wrap; /* Если не влезают, переносятся на новую строку */
-    gap: 10px; /* Отступ между кнопками */
+    gap: 5px; /* Отступ между кнопками */
     margin-top: 15px;
 }
 
@@ -216,14 +264,16 @@ input:checked + .slider:before {
         <span class="icon moon">⛅</span>
     </span>
 </label>
-        <input type="file" id="fileInput" accept=".csv">
+        <input type="file" id="fileInput" accept=".csv" onchange="processCSV()">
         <div class="button-container">
-    <button onclick="processCSV()">Upload</button>
     <button id="openAllButton" style="display:none;" onclick="openAllLinks()">Open all links</button>
     <button id="copyLinksButton" style="display:none;" onclick="copyLinks()">Copy all links</button>
     <button id="downloadCSVButton" style="display:none;" onclick="downloadCSV()">Download CSV for bulk</button>
 </div>
-        <input type="text" id="searchInput" placeholder="Search for courier ID..." onkeyup="filterCouriers()" style="display:none;">
+        <input type="text" id="searchInput" list="courierSuggestions" placeholder="Search for courier ID..." onkeyup="filterCouriers()" style="display: none;">
+<datalist id="courierSuggestions"></datalist>
+
+        
         <div id="loading">Processing file...</div>
         <div id="output"></div>
     </div>
@@ -233,11 +283,12 @@ input:checked + .slider:before {
         let courierIds = [];
 
         function processCSV() {
-            const fileInput = document.getElementById('fileInput');
-            if (!fileInput.files.length) {
-                alert('Please select a file!');
-                return;
-            }
+        document.getElementById('output').innerHTML = '';
+    const fileInput = document.getElementById('fileInput');
+    if (!fileInput.files.length) {
+        alert('Please select a file!');
+        return;
+    }
             
             document.getElementById('loading').style.display = 'block';
             const outputDiv = document.getElementById('output');
@@ -278,10 +329,23 @@ input:checked + .slider:before {
                     document.getElementById('copyLinksButton').style.display = 'block';
                     document.getElementById('downloadCSVButton').style.display = 'block';
                 }
+                // Показываем поле поиска после загрузки файла
+document.getElementById('searchInput').style.display = 'block';
+
+// Заполняем подсказки в datalist
+let datalist = document.getElementById("courierSuggestions");
+datalist.innerHTML = ""; // Очищаем старые данные
+courierIds.forEach(id => {
+    let option = document.createElement("option");
+    option.value = id;
+    datalist.appendChild(option);
+});
+
             };
             
             reader.readAsText(fileInput.files[0]);
         }
+        // Заполняем подсказки в datalist
 
         function openAllLinks() {
             courierLinks.forEach(link => {
@@ -325,16 +389,23 @@ input:checked + .slider:before {
 }
 function toggleTheme() {
     document.body.classList.toggle('dark-mode');
-    let themeToggle = document.getElementById('themeToggle');
 
+    // Сохраняем тему
     if (document.body.classList.contains('dark-mode')) {
         localStorage.setItem('theme', 'dark');
-        themeToggle.checked = true;
     } else {
         localStorage.setItem('theme', 'light');
-        themeToggle.checked = false;
     }
 }
+
+// Проверяем сохранённую тему при загрузке страницы
+window.onload = function () {
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-mode');
+        document.getElementById('themeToggle').checked = true;
+    }
+};
+
 
 // Проверяем сохранённую тему и обновляем переключатель
 window.onload = function () {
