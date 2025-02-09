@@ -101,6 +101,7 @@
         <button onclick="processCSV()">Upload</button>
         <button id="openAllButton" style="display:none;" onclick="openAllLinks()">Open all links</button>
         <button id="copyLinksButton" style="display:none;" onclick="copyLinks()">Copy all links</button>
+        <button id="downloadCSVButton" style="display:none;" onclick="downloadCSV()">Download CSV for bulk</button>
         <input type="text" id="searchInput" placeholder="Search for courier ID..." onkeyup="filterCouriers()" style="display:none;">
         <div id="loading">Processing file...</div>
         <div id="output"></div>
@@ -108,6 +109,7 @@
 
     <script>
         let courierLinks = [];
+        let courierIds = [];
 
         function processCSV() {
             const fileInput = document.getElementById('fileInput');
@@ -120,18 +122,20 @@
             const outputDiv = document.getElementById('output');
             outputDiv.innerHTML = '';
             courierLinks = [];
+            courierIds = [];
             
             const reader = new FileReader();
             reader.onload = function(event) {
                 document.getElementById('loading').style.display = 'none';
                 const text = event.target.result;
                 const lines = text.split('\n');
-                let courierIds = [];
                 
                 for (let i = 1; i < lines.length; i++) {
                     let columns = lines[i].split(',');
                     if (columns.length > 1 && !isNaN(columns[1].trim())) {
-                        courierIds.push(columns[1].trim());
+                        let id = columns[1].trim();
+                        courierIds.push(id);
+                        courierLinks.push(`https://ops.wolt.com/couriers/${id}`);
                     }
                 }
                 
@@ -139,24 +143,19 @@
                     document.getElementById('searchInput').style.display = 'block';
                     outputDiv.innerHTML = '<h3>Courier IDs:</h3>';
                     courierIds.forEach((id, index) => {
-                        const link = document.createElement('a');
-                        link.href = `https://ops.wolt.com/couriers/${id}`;
-                        link.target = '_blank';
-                        link.innerText = `${index + 1}. courier_id_${id}`;
+                        const a = document.createElement('a');
+                        a.href = courierLinks[index];
+                        a.target = '_blank';
+                        a.innerText = `${index + 1}. courier_id_${id}`;
                         
                         const box = document.createElement('div');
                         box.className = 'courier-box';
-                        box.appendChild(link);
+                        box.appendChild(a);
                         outputDiv.appendChild(box);
-                        
-                        courierLinks.push(link.href);
                     });
                     document.getElementById('openAllButton').style.display = 'block';
                     document.getElementById('copyLinksButton').style.display = 'block';
-                } else {
-                    outputDiv.innerHTML = '<p>Courier IDs not found</p>';
-                    document.getElementById('openAllButton').style.display = 'none';
-                    document.getElementById('copyLinksButton').style.display = 'none';
+                    document.getElementById('downloadCSVButton').style.display = 'block';
                 }
             };
             
@@ -168,13 +167,7 @@
                 window.open(link, '_blank');
             });
         }
-        
-        function copyLinks() {
-            navigator.clipboard.writeText(courierLinks.join('\n')).then(() => {
-                alert('All links copied to clipboard!');
-            });
-        }
-        
+
         function filterCouriers() {
             let input = document.getElementById('searchInput').value.toLowerCase();
             let boxes = document.getElementsByClassName('courier-box');
@@ -185,6 +178,21 @@
                     box.style.display = 'none';
                 }
             }
+        }
+
+        function copyLinks() {
+            navigator.clipboard.writeText(courierLinks.join('\n')).then(() => {
+                alert('All links copied to clipboard!');
+            });
+        }
+
+        function downloadCSV() {
+            let csvContent = "courierIds\n" + courierIds.join("\n");
+            let blob = new Blob([csvContent], { type: 'text/csv' });
+            let link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "courier_ids.csv";
+            link.click();
         }
     </script>
 </body>
