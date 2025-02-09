@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wolt Cash Debt Checker</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #F4F6F8;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            color: black;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #0078FF;
+        }
+        h3 {
+            text-align: center;
+            color: #0078FF;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #0078FF;
+            color: white;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            display: block;
+            transition: 0.3s;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        button:hover {
+            background-color: #005bb5;
+        }
+        input[type="file"] {
+            padding: 10px;
+            border: 2px dashed #0078FF;
+            border-radius: 6px;
+            display: block;
+            margin: 10px auto;
+            text-align: center;
+        }
+        #output {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+        .courier-box {
+            background: #E3F2FD;
+            padding: 5px;
+            border-radius: 4px;
+            margin: 3px auto;
+            max-width: 300px;
+            text-align: center;
+            font-size: 14px;
+        }
+        a {
+            color: #0078FF;
+            text-decoration: none;
+            font-weight: bold;
+            display: block;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        #loading {
+            display: none;
+            font-size: 16px;
+            color: #0078FF;
+            margin-top: 10px;
+        }
+        #searchInput {
+            padding: 8px;
+            margin-top: 10px;
+            width: 80%;
+            border: 1px solid #0078FF;
+            border-radius: 4px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Wolt Cash Debt Checker</h2>
+        <input type="file" id="fileInput" accept=".csv">
+        <button onclick="processCSV()">Upload</button>
+        <button id="openAllButton" style="display:none;" onclick="openAllLinks()">Open all links</button>
+        <button id="copyLinksButton" style="display:none;" onclick="copyLinks()">Copy all links</button>
+        <input type="text" id="searchInput" placeholder="Search for courier ID..." onkeyup="filterCouriers()" style="display:none;">
+        <div id="loading">Processing file...</div>
+        <div id="output"></div>
+    </div>
+
+    <script>
+        let courierLinks = [];
+
+        function processCSV() {
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files.length) {
+                alert('Please select a file!');
+                return;
+            }
+            
+            document.getElementById('loading').style.display = 'block';
+            const outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = '';
+            courierLinks = [];
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                document.getElementById('loading').style.display = 'none';
+                const text = event.target.result;
+                const lines = text.split('\n');
+                let courierIds = [];
+                
+                for (let i = 1; i < lines.length; i++) {
+                    let columns = lines[i].split(',');
+                    if (columns.length > 1 && !isNaN(columns[1].trim())) {
+                        courierIds.push(columns[1].trim());
+                    }
+                }
+                
+                if (courierIds.length > 0) {
+                    document.getElementById('searchInput').style.display = 'block';
+                    outputDiv.innerHTML = '<h3>Courier IDs:</h3>';
+                    courierIds.forEach((id, index) => {
+                        const link = document.createElement('a');
+                        link.href = `https://ops.wolt.com/couriers/${id}`;
+                        link.target = '_blank';
+                        link.innerText = `${index + 1}. courier_id_${id}`;
+                        
+                        const box = document.createElement('div');
+                        box.className = 'courier-box';
+                        box.appendChild(link);
+                        outputDiv.appendChild(box);
+                        
+                        courierLinks.push(link.href);
+                    });
+                    document.getElementById('openAllButton').style.display = 'block';
+                    document.getElementById('copyLinksButton').style.display = 'block';
+                } else {
+                    outputDiv.innerHTML = '<p>Courier IDs not found</p>';
+                    document.getElementById('openAllButton').style.display = 'none';
+                    document.getElementById('copyLinksButton').style.display = 'none';
+                }
+            };
+            
+            reader.readAsText(fileInput.files[0]);
+        }
+
+        function openAllLinks() {
+            courierLinks.forEach(link => {
+                window.open(link, '_blank');
+            });
+        }
+        
+        function copyLinks() {
+            navigator.clipboard.writeText(courierLinks.join('\n')).then(() => {
+                alert('All links copied to clipboard!');
+            });
+        }
+        
+        function filterCouriers() {
+            let input = document.getElementById('searchInput').value.toLowerCase();
+            let boxes = document.getElementsByClassName('courier-box');
+            for (let box of boxes) {
+                if (box.innerText.toLowerCase().includes(input)) {
+                    box.style.display = '';
+                } else {
+                    box.style.display = 'none';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
