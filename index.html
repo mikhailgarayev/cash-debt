@@ -6,13 +6,12 @@
     <title>Wolt Cash Debt Checker Tool</title>
     <style>
         body {
-    font-family: 'Inter', sans-serif;
-    background: linear-gradient(to right, #e3f2fd, #ffffff);
-    color: #333;
-    text-align: center;
-    padding: 20px;
-}
-
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to right, #e3f2fd, #ffffff);
+            color: #333;
+            text-align: center;
+            padding: 20px;
+        }
         .container {
             max-width: 600px;
             margin: auto;
@@ -31,24 +30,22 @@
             margin-top: 20px;
         }
         button {
-    background-color: #0078FF;
-    color: white;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    transition: 0.3s;
-    box-shadow: 0 4px 8px rgba(0, 120, 255, 0.3);
-}
-
-button:hover {
-    background-color: #005bb5;
-    transform: scale(1.05);
-    box-shadow: 0 6px 12px rgba(0, 120, 255, 0.4);
-}
-
+            background-color: #0078FF;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 120, 255, 0.3);
+        }
+        button:hover {
+            background-color: #005bb5;
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 120, 255, 0.4);
+        }
         input[type="file"] {
             padding: 10px;
             border: 2px dashed #0078FF;
@@ -63,22 +60,21 @@ button:hover {
             font-size: 16px;
         }
         .courier-box {
-    background: white;
-    padding: 12px;
-    border-radius: 10px;
-    margin: 5px auto;
-    max-width: 320px;
-    text-align: center;
-    font-size: 16px;
-    font-weight: bold;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    transition: 0.3s;
-}
-
-.courier-box:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-}
+            background: white;
+            padding: 12px;
+            border-radius: 10px;
+            margin: 5px auto;
+            max-width: 320px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: 0.3s;
+        }
+        .courier-box:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
         a {
             color: #0078FF;
             text-decoration: none;
@@ -104,176 +100,178 @@ button:hover {
             margin-left: auto;
             margin-right: auto;
         }
+
+        /* Тёмная тема */
         .dark-mode {
-    background: #121212 !important; /* Тёмный фон */
-    color: white;
-    * {
-    transition: background 0.5s ease, color 0.5s ease;
-}
-}
+            background: #121212 !important; /* Тёмный фон */
+            color: white;
+        }
+        .dark-mode .container {
+            background: #1e1e1e;
+            color: white;
+            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+        }
+        .dark-mode input[type="file"], 
+        .dark-mode input[type="text"] {
+            background: #1e1e1e;
+            color: white;
+            border-color: #0078FF;
+        }
+        .dark-mode .courier-box {
+            background: #2c2c2c;
+            border: 1px solid #444;
+            color: white;
+        }
+        .dark-mode button {
+            background-color: #333;
+            color: white;
+        }
+        .dark-mode button:hover {
+            background-color: #444;
+        }
+        .dark-mode .container {
+            background: #2c2c2c;
+            color: white;
+        }
+        .dark-mode button {
+            background-color: #0078FF;
+            color: white;
+        }
+        .dark-mode button:hover {
+            background-color: #005bb5;
+        }
+        .dark-mode input[type="file"] {
+            border-color: #0078FF;
+            background-color: #2c2c2c;
+            color: white;
+        }
+        .dark-mode .courier-box {
+            background: #3a3a3a;
+        }
+        .dark-mode a {
+            color: #4fa3ff;
+        }
 
-/* Делаем контейнеры темными */
-.dark-mode .container {
-    background: #1e1e1e;
-    color: white;
-    box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
-}
+        /* Контейнер переключателя (toggle) */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;    /* можно увеличить/уменьшить под свои нужды */
+            height: 34px;
+            margin-top: 10px;
+        }
+        /* Прячем стандартный чекбокс */
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        /* Ползунок */
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: background-color 0.4s;
+            border-radius: 34px;
+        }
+        /* Круг внутри ползунка */
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: #fff;
+            transition: transform 0.4s;
+            border-radius: 50%;
+        }
+        /* Иконки (солнце и луна) внутри переключателя */
+        .sun,
+        .moon {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;          /* Размер emoji */
+            pointer-events: none;     /* Игнорировать клики */
+            transition: opacity 0.4s, transform 0.4s;
+        }
+        .sun {
+            left: 8px;
+            opacity: 1;               /* По умолчанию видно солнце (светлая тема) */
+            transform: translateY(-50%) scale(1);
+        }
+        .moon {
+            right: 8px;
+            opacity: 0;               /* Луна скрыта по умолчанию */
+            transform: translateY(-50%) scale(0.5);
+        }
+        /* Когда чекбокс включён (тёмная тема) */
+        input:checked + .slider {
+            background-color: #0078FF;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px); /* Кружок едет вправо */
+        }
+        /* Солнце пропадает, луна появляется */
+        input:checked + .slider .sun {
+            opacity: 0;
+            transform: translateY(-50%) scale(0.5);
+        }
+        input:checked + .slider .moon {
+            opacity: 1;
+            transform: translateY(-50%) scale(1);
+        }
 
-/* Тёмная тема для полей ввода */
-.dark-mode input[type="file"], 
-.dark-mode input[type="text"] {
-    background: #1e1e1e;
-    color: white;
-    border-color: #0078FF;
-}
-
-/* Темный цвет карточек курьеров */
-.dark-mode .courier-box {
-    background: #2c2c2c;
-    border: 1px solid #444;
-    color: white;
-}
-
-/* Темные кнопки */
-.dark-mode button {
-    background-color: #333;
-    color: white;
-}
-
-.dark-mode button:hover {
-    background-color: #444;
-}
-
-
-.dark-mode .container {
-    background: #2c2c2c;
-    color: white;
-}
-
-.dark-mode button {
-    background-color: #0078FF;
-    color: white;
-}
-
-.dark-mode button:hover {
-    background-color: #005bb5;
-}
-
-.dark-mode input[type="file"] {
-    border-color: #0078FF;
-    background-color: #2c2c2c;
-    color: white;
-}
-
-.dark-mode .courier-box {
-    background: #3a3a3a;
-}
-
-.dark-mode a {
-    color: #4fa3ff;
-}
-/* Стиль контейнера переключателя */
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 50px;
-    height: 26px;
-    margin-top: 10px;
-}
-
-/* Прячем стандартный чекбокс */
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-/* Стиль ползунка */
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: 0.4s;
-    border-radius: 26px;
-}
-
-/* Круглый ползунок внутри */
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 20px;
-    width: 20px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    transition: 0.4s;
-    border-radius: 50%;
-}
-
-/* Когда чекбокс включён (тёмная тема) */
-input:checked + .slider {
-    background-color: #0078FF;
-}
-
-/* Двигаем ползунок вправо */
-input:checked + .slider:before {
-    transform: translateX(24px);
-}
-
-/* Делаем ползунок круглым */
-.slider.round {
-    border-radius: 26px;
-}
-.button-container {
-    display: flex; /* Располагаем кнопки в один ряд */
-    justify-content: center; /* Выравниваем их по центру */
-    flex-wrap: wrap; /* Если не влезают, переносятся на новую строку */
-    gap: 5px; /* Отступ между кнопками */
-    margin-top: 15px;
-}
-
-/* Стили для кнопок */
-.button-container button {
-    padding: 10px 15px;
-    font-size: 14px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    background-color: #0078FF;
-    color: white;
-    transition: 0.3s;
-}
-
-.button-container button:hover {
-    background-color: #005bb5;
-}
-
+        .button-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 15px;
+        }
+        .button-container button {
+            padding: 10px 15px;
+            font-size: 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background-color: #0078FF;
+            color: white;
+            transition: 0.3s;
+        }
+        .button-container button:hover {
+            background-color: #005bb5;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>Wolt Cash Debt Checker Tool</h2>
-        <label class="switch">
-    <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
-    <span class="slider round">
-        <span class="icon sun">🌙</span>
-        <span class="icon moon">⛅</span>
-    </span>
-</label>
-        <input type="file" id="fileInput" accept=".csv" onchange="processCSV()">
-        <div class="button-container">
-    <button id="openAllButton" style="display:none;" onclick="openAllLinks()">Open all links</button>
-    <button id="copyLinksButton" style="display:none;" onclick="copyLinks()">Copy all links</button>
-    <button id="downloadCSVButton" style="display:none;" onclick="downloadCSV()">Download CSV for bulk</button>
-</div>
-        <input type="text" id="searchInput" list="courierSuggestions" placeholder="Search for courier ID..." onkeyup="filterCouriers()" style="display: none;">
-<datalist id="courierSuggestions"></datalist>
-
         
+        <!-- Переключатель темы (toggle) -->
+        <label class="switch">
+            <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+            <span class="slider round">
+                <!-- Иконка солнца -->
+                <span class="sun">☀️</span>
+                <!-- Иконка луны -->
+                <span class="moon">🌙</span>
+            </span>
+        </label>
+        
+        <input type="file" id="fileInput" accept=".csv" onchange="processCSV()">
+        
+        <div class="button-container">
+            <button id="openAllButton" style="display:none;" onclick="openAllLinks()">Open all links</button>
+            <button id="copyLinksButton" style="display:none;" onclick="copyLinks()">Copy all links</button>
+            <button id="downloadCSVButton" style="display:none;" onclick="downloadCSV()">Download CSV for bulk</button>
+        </div>
+        
+        <input type="text" id="searchInput" list="courierSuggestions" placeholder="Search for courier ID..." onkeyup="filterCouriers()" style="display: none;">
+        <datalist id="courierSuggestions"></datalist>
+
         <div id="loading">Processing file...</div>
         <div id="output"></div>
     </div>
@@ -282,26 +280,27 @@ input:checked + .slider:before {
         let courierLinks = [];
         let courierIds = [];
 
+        // Обработка CSV-файла
         function processCSV() {
-        document.getElementById('output').innerHTML = '';
-    const fileInput = document.getElementById('fileInput');
-    if (!fileInput.files.length) {
-        alert('Please select a file!');
-        return;
-    }
-            
+            document.getElementById('output').innerHTML = '';
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files.length) {
+                alert('Please select a file!');
+                return;
+            }
             document.getElementById('loading').style.display = 'block';
             const outputDiv = document.getElementById('output');
             outputDiv.innerHTML = '';
             courierLinks = [];
             courierIds = [];
-            
+
             const reader = new FileReader();
             reader.onload = function(event) {
                 document.getElementById('loading').style.display = 'none';
                 const text = event.target.result;
                 const lines = text.split('\n');
-                
+
+                // Начинаем с i=1, чтобы пропустить заголовок
                 for (let i = 1; i < lines.length; i++) {
                     let columns = lines[i].split(',');
                     if (columns.length > 1 && !isNaN(columns[1].trim())) {
@@ -310,7 +309,7 @@ input:checked + .slider:before {
                         courierLinks.push(`https://ops.wolt.com/couriers/${id}`);
                     }
                 }
-                
+
                 if (courierIds.length > 0) {
                     document.getElementById('searchInput').style.display = 'block';
                     outputDiv.innerHTML = '<h3>Courier IDs:</h3>';
@@ -319,7 +318,7 @@ input:checked + .slider:before {
                         a.href = courierLinks[index];
                         a.target = '_blank';
                         a.innerText = `${index + 1}. courier_id_${id}`;
-                        
+
                         const box = document.createElement('div');
                         box.className = 'courier-box';
                         box.appendChild(a);
@@ -329,30 +328,30 @@ input:checked + .slider:before {
                     document.getElementById('copyLinksButton').style.display = 'block';
                     document.getElementById('downloadCSVButton').style.display = 'block';
                 }
+
                 // Показываем поле поиска после загрузки файла
-document.getElementById('searchInput').style.display = 'block';
+                document.getElementById('searchInput').style.display = 'block';
 
-// Заполняем подсказки в datalist
-let datalist = document.getElementById("courierSuggestions");
-datalist.innerHTML = ""; // Очищаем старые данные
-courierIds.forEach(id => {
-    let option = document.createElement("option");
-    option.value = id;
-    datalist.appendChild(option);
-});
-
+                // Заполняем подсказки (datalist) для поиска
+                let datalist = document.getElementById("courierSuggestions");
+                datalist.innerHTML = ""; // Очищаем старые данные
+                courierIds.forEach(id => {
+                    let option = document.createElement("option");
+                    option.value = id;
+                    datalist.appendChild(option);
+                });
             };
-            
             reader.readAsText(fileInput.files[0]);
         }
-        // Заполняем подсказки в datalist
 
+        // Открыть все ссылки в новых вкладках
         function openAllLinks() {
             courierLinks.forEach(link => {
                 window.open(link, '_blank');
             });
         }
 
+        // Фильтрация по поиску
         function filterCouriers() {
             let input = document.getElementById('searchInput').value.toLowerCase();
             let boxes = document.getElementsByClassName('courier-box');
@@ -365,12 +364,14 @@ courierIds.forEach(id => {
             }
         }
 
+        // Копирование всех ссылок в буфер обмена
         function copyLinks() {
             navigator.clipboard.writeText(courierLinks.join('\n')).then(() => {
                 alert('All links copied to clipboard!');
             });
         }
 
+        // Скачивание CSV-файла со списком courierIds
         function downloadCSV() {
             let csvContent = "courierIds\n" + courierIds.join("\n");
             let blob = new Blob([csvContent], { type: 'text/csv' });
@@ -379,42 +380,26 @@ courierIds.forEach(id => {
             link.download = "courier_ids.csv";
             link.click();
         }
-        function downloadCSV() {
-    let csvContent = "courierIds\n" + courierIds.join("\n");
-    let blob = new Blob([csvContent], { type: 'text/csv' });
-    let link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "courier_ids.csv";
-    link.click();
-}
-function toggleTheme() {
-    document.body.classList.toggle('dark-mode');
 
-    // Сохраняем тему
-    if (document.body.classList.contains('dark-mode')) {
-        localStorage.setItem('theme', 'dark');
-    } else {
-        localStorage.setItem('theme', 'light');
-    }
-}
+        // Переключение темы (светлая/тёмная)
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            // Сохраняем в localStorage
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+        }
 
-// Проверяем сохранённую тему при загрузке страницы
-window.onload = function () {
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark-mode');
-        document.getElementById('themeToggle').checked = true;
-    }
-};
-
-
-// Проверяем сохранённую тему и обновляем переключатель
-window.onload = function () {
-    let themeToggle = document.getElementById('themeToggle');
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark-mode');
-        themeToggle.checked = true;
-    }
-};
+        // При загрузке страницы проверяем сохранённую тему
+        window.onload = function () {
+            let themeToggle = document.getElementById('themeToggle');
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeToggle.checked = true;
+            }
+        };
     </script>
 </body>
 </html>
