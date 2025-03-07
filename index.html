@@ -1,529 +1,570 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Wolt Cash Debt Checker Tool</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wolt Cash Debt Checker Tool</title>
 
-    <!-- Подключаем pdf.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
-    
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(to right, #e3f2fd, #ffffff);
-            color: #333;
-            text-align: center;
-            padding: 20px;
-        }
-        .container {
-            max-width: 600px;
-            margin: auto;
-            background: white;
-            color: black;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        h2 {
-            color: #0078FF;
-            margin-bottom: 20px;
-        }
-        h3 {
-            text-align: center;
-            color: #0078FF;
-            margin-top: 20px;
-        }
+  <!-- Подключаем pdf.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+  <!-- Подключаем Font Awesome для иконок -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-        /* Кнопки */
-        button {
-            background-color: #0078FF;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: 0.3s;
-            box-shadow: 0 4px 8px rgba(0, 120, 255, 0.3);
-        }
-        button:hover {
-            background-color: #005bb5;
-            transform: scale(1.05);
-            box-shadow: 0 6px 12px rgba(0, 120, 255, 0.4);
-        }
+  <style>
+    /* 
+      Задаём фоновое изображение через ссылку на GitHub (raw).
+      Здесь предполагается, что файл называется background.jpg.
+      Если путь или название другое — замените URL.
+    */
+    body {
+      font-family: 'Inter', sans-serif;
+      color: #333;
+      text-align: center;
+      padding: 20px;
+      background: #e3f2fd 
+                  url('https://raw.githubusercontent.com/mikhailgarayev/cash-debt/main/background.png')
+                  no-repeat
+                  center 0; /* Можно менять позицию: 'center 0' или 'center 50px' */
+      background-size: cover; /* Заполняем весь экран */
+    }
 
-        /* Контейнер для блока "Загрузите файл" */
-        .file-input-container {
-            margin: 20px 0;
-            text-align: center;
-        }
-        /* Подпись над кнопкой */
-        .file-label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #0078FF;
-        }
-        /* Скрываем стандартный input[type="file"] */
-        .file-input-container input[type="file"] {
-            display: none;
-        }
-        /* Стилизуем label, чтобы выглядела как кнопка */
-        .custom-file-upload {
-            display: inline-block;
-            background-color: #0078FF;
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: 0.3s;
-            box-shadow: 0 4px 8px rgba(0, 120, 255, 0.3);
-        }
-        .custom-file-upload:hover {
-            background-color: #005bb5;
-            transform: scale(1.05);
-            box-shadow: 0 6px 12px rgba(0, 120, 255, 0.4);
-        }
-        /* Подпись "Файл не выбран" */
-        .file-chosen {
-            margin-left: 10px;
-            font-size: 14px;
-            color: #555;
-        }
+    .container {
+      max-width: 600px;
+      margin: 40px auto 20px auto; /* Уменьшили верхний отступ до 40px */
+      background: rgba(255,255,255,0.9);
+      color: #333;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
 
-        #output {
-            margin-top: 20px;
-            text-align: center;
-            font-size: 16px;
-        }
-        .courier-box {
-            background: white;
-            padding: 12px;
-            border-radius: 10px;
-            margin: 5px auto;
-            max-width: 320px;
-            text-align: center;
-            font-size: 16px;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            transition: 0.3s;
-        }
-        .courier-box:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-        }
-        a {
-            color: #0078FF;
-            text-decoration: none;
-            font-weight: bold;
-            display: block;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        #loading {
-            display: none;
-            font-size: 16px;
-            color: #0078FF;
-            margin-top: 10px;
-        }
-        #searchInput {
-            padding: 8px;
-            margin-top: 10px;
-            width: 80%;
-            border: 1px solid #0078FF;
-            border-radius: 4px;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
+    h2 {
+      color: #0078FF;
+      margin-bottom: 20px;
+    }
+    h3 {
+      text-align: center;
+      color: #0078FF;
+      margin-top: 20px;
+    }
 
-        /* Тёмная тема */
-        .dark-mode {
-            background: #121212 !important;
-            color: white;
-        }
-        .dark-mode .container {
-            background: #1e1e1e;
-            color: white;
-            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
-        }
-        .dark-mode input[type="file"], 
-        .dark-mode input[type="text"] {
-            background: #1e1e1e;
-            color: white;
-            border-color: #0078FF;
-        }
-        .dark-mode .courier-box {
-            background: #2c2c2c;
-            border: 1px solid #444;
-            color: white;
-        }
-        .dark-mode button {
-            background-color: #333;
-            color: white;
-        }
-        .dark-mode button:hover {
-            background-color: #444;
-        }
-        .dark-mode .container {
-            background: #2c2c2c;
-            color: white;
-        }
-        .dark-mode button {
-            background-color: #0078FF;
-            color: white;
-        }
-        .dark-mode button:hover {
-            background-color: #005bb5;
-        }
-        .dark-mode .courier-box {
-            background: #3a3a3a;
-        }
-        .dark-mode a {
-            color: #4fa3ff;
-        }
-        .dark-mode .custom-file-upload {
-            background-color: #333;
-        }
-        .dark-mode .custom-file-upload:hover {
-            background-color: #444;
-        }
-        .dark-mode .file-chosen {
-            color: #ccc;
-        }
+    /* Кнопки */
+    button {
+      background-color: #0078FF;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: 0.3s;
+      box-shadow: 0 4px 8px rgba(0, 120, 255, 0.3);
+    }
+    button:hover {
+      background-color: #005bb5;
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(0, 120, 255, 0.4);
+    }
 
-        /* Тоггл-переключатель (солнце/луна) */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 34px;
-            margin-top: 10px;
-        }
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #ccc;
-            transition: background-color 0.4s;
-            border-radius: 34px;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
-            background-color: #fff;
-            transition: transform 0.4s;
-            border-radius: 50%;
-        }
-        .sun,
-        .moon {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 14px;
-            pointer-events: none;
-            transition: opacity 0.4s, transform 0.4s;
-        }
-        .sun {
-            left: 8px;
-            opacity: 1;
-            transform: translateY(-50%) scale(1);
-        }
-        .moon {
-            right: 8px;
-            opacity: 0;
-            transform: translateY(-50%) scale(0.5);
-        }
-        input:checked + .slider {
-            background-color: #0078FF;
-        }
-        input:checked + .slider:before {
-            transform: translateX(26px);
-        }
-        input:checked + .slider .sun {
-            opacity: 0;
-            transform: translateY(-50%) scale(0.5);
-        }
-        input:checked + .slider .moon {
-            opacity: 1;
-            transform: translateY(-50%) scale(1);
-        }
+    /* Контейнер для блока выбора файла */
+    .file-input-container {
+      margin: 20px 0;
+      text-align: center;
+    }
+    .file-label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #0078FF;
+    }
+    /* Скрываем оригинальный input[type="file"] */
+    .file-input-container input[type="file"] {
+      display: none;
+    }
+    /* Стилизация label как кнопки */
+    .custom-file-upload {
+      display: inline-block;
+      background-color: #0078FF;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: 0.3s;
+      box-shadow: 0 4px 8px rgba(0, 120, 255, 0.3);
+    }
+    .custom-file-upload:hover {
+      background-color: #005bb5;
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(0, 120, 255, 0.4);
+    }
+    .file-chosen {
+      margin-left: 10px;
+      font-size: 14px;
+      color: #555;
+    }
 
-        .button-container {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 5px;
-            margin-top: 15px;
-        }
-        .button-container button {
-            padding: 10px 15px;
-            font-size: 14px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            background-color: #0078FF;
-            color: white;
-            transition: 0.3s;
-        }
-        .button-container button:hover {
-            background-color: #005bb5;
-        }
-    </style>
+    /* Drag & Drop зона */
+    .drop-zone {
+      border: 2px dashed #0078FF;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      color: #0078FF;
+      margin: 20px auto;
+      transition: background-color 0.3s;
+    }
+    .drop-zone.dragover {
+      background-color: rgba(0, 120, 255, 0.1);
+    }
+
+    /* Вывод списка курьеров */
+    #output {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 16px;
+    }
+    .courier-box {
+      background: white;
+      padding: 12px;
+      border-radius: 10px;
+      margin: 5px auto;
+      max-width: 320px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      transition: 0.3s;
+    }
+    .courier-box:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    a {
+      color: #0078FF;
+      text-decoration: none;
+      font-weight: bold;
+      display: block;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    #loading {
+      display: none;
+      font-size: 16px;
+      color: #0078FF;
+      margin-top: 10px;
+    }
+    #searchInput {
+      padding: 8px;
+      margin-top: 10px;
+      width: 80%;
+      border: 1px solid #0078FF;
+      border-radius: 4px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Тёмная тема */
+    .dark-mode {
+      background: #121212 !important;
+      color: white;
+    }
+    .dark-mode .container {
+      background: #1e1e1e;
+      color: white;
+      box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+    }
+    .dark-mode input[type="file"], 
+    .dark-mode input[type="text"] {
+      background: #1e1e1e;
+      color: white;
+      border-color: #0078FF;
+    }
+    .dark-mode .courier-box {
+      background: #2c2c2c;
+      border: 1px solid #444;
+      color: white;
+    }
+    .dark-mode button {
+      background-color: #333;
+      color: white;
+    }
+    .dark-mode button:hover {
+      background-color: #444;
+    }
+    .dark-mode .custom-file-upload {
+      background-color: #333;
+    }
+    .dark-mode .custom-file-upload:hover {
+      background-color: #444;
+    }
+    .dark-mode .file-chosen {
+      color: #ccc;
+    }
+    .dark-mode a {
+      color: #4fa3ff;
+    }
+
+    /* Тоггл-переключатель (солнце/луна) */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+      margin-top: 10px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: background-color 0.4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: #fff;
+      transition: transform 0.4s;
+      border-radius: 50%;
+    }
+    .sun,
+    .moon {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      pointer-events: none;
+      transition: opacity 0.4s, transform 0.4s;
+    }
+    .sun {
+      left: 8px;
+      opacity: 1;
+      transform: translateY(-50%) scale(1);
+    }
+    .moon {
+      right: 8px;
+      opacity: 0;
+      transform: translateY(-50%) scale(0.5);
+    }
+    input:checked + .slider {
+      background-color: #0078FF;
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+    input:checked + .slider .sun {
+      opacity: 0;
+      transform: translateY(-50%) scale(0.5);
+    }
+    input:checked + .slider .moon {
+      opacity: 1;
+      transform: translateY(-50%) scale(1);
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 15px;
+    }
+    .button-container button {
+      padding: 10px 15px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background-color: #0078FF;
+      color: white;
+      transition: 0.3s;
+    }
+    .button-container button:hover {
+      background-color: #005bb5;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Wolt Cash Debt Checker Tool</h2>
-        
-        <!-- Переключатель темы (toggle) -->
-        <label class="switch">
-            <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
-            <span class="slider round">
-                <span class="sun">☀️</span>
-                <span class="moon">🌙</span>
-            </span>
-        </label>
-        
-        <!-- Контейнер для загрузки CSV -->
-        <div class="file-input-container">
-            <span class="file-label">Загрузите CSV-файл</span>
-            <!-- Кнопка выбора файла (через label) -->
-            <label for="fileInput" class="custom-file-upload">Выбрать CSV</label>
-            <!-- Название выбранного файла -->
-            <span class="file-chosen" id="fileCSVName">Файл не выбран</span>
-            <!-- Скрытый input -->
-            <input type="file" id="fileInput" accept=".csv" onchange="processCSV(); updateFileName('fileInput','fileCSVName')" />
-        </div>
+  <div class="container">
+    <h2>Wolt Cash Debt Checker Tool</h2>
+    
+    <!-- Переключатель темы -->
+    <label class="switch">
+      <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+      <span class="slider round">
+        <span class="sun">☀️</span>
+        <span class="moon">🌙</span>
+      </span>
+    </label>
 
-        <!-- Контейнер для загрузки PDF -->
-        <div class="file-input-container">
-            <span class="file-label">Загрузите PDF-файл</span>
-            <!-- Кнопка выбора файла (через label) -->
-            <label for="pdfInput" class="custom-file-upload">Выбрать PDF</label>
-            <!-- Название выбранного файла -->
-            <span class="file-chosen" id="filePDFName">Файл не выбран</span>
-            <!-- Скрытый input -->
-            <input type="file" id="pdfInput" accept=".pdf" onchange="processPDF(); updateFileName('pdfInput','filePDFName')" />
-        </div>
-
-        <div class="button-container">
-            <button id="openAllButton" style="display:none;" onclick="openAllLinks()">Open all links</button>
-            <button id="copyLinksButton" style="display:none;" onclick="copyLinks()">Copy all links</button>
-            <button id="downloadCSVButton" style="display:none;" onclick="downloadCSV()">Download CSV for bulk</button>
-        </div>
-        
-        <input type="text" id="searchInput" list="courierSuggestions" placeholder="Search for courier ID..." onkeyup="filterCouriers()" style="display: none;">
-        <datalist id="courierSuggestions"></datalist>
-
-        <div id="loading">Processing file...</div>
-        <div id="output"></div>
+    <!-- Контейнер для загрузки файлов с кастомными кнопками -->
+    <div class="file-input-container">
+      <span class="file-label">Загрузите CSV-файл</span>
+      <label for="fileInput" class="custom-file-upload">
+        <i class="fas fa-file-csv"></i> Выбрать CSV
+      </label>
+      <span class="file-chosen" id="fileCSVName">Файл не выбран</span>
+      <input type="file" id="fileInput" accept=".csv" onchange="processCSVFromInput(); updateFileName('fileInput','fileCSVName')" />
     </div>
 
-    <script>
-        // Инициализация pdf.js
-        const pdfjsLib = window['pdfjs-dist/build/pdf'];
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+    <div class="file-input-container">
+      <span class="file-label">Загрузите PDF-файл</span>
+      <label for="pdfInput" class="custom-file-upload">
+        <i class="fas fa-file-pdf"></i> Выбрать PDF
+      </label>
+      <span class="file-chosen" id="filePDFName">Файл не выбран</span>
+      <input type="file" id="pdfInput" accept=".pdf" onchange="processPDFFromInput(); updateFileName('pdfInput','filePDFName')" />
+    </div>
 
-        let courierLinks = [];
-        let courierIds = [];
+    <!-- Зона Drag & Drop для загрузки файлов -->
+    <div class="drop-zone" id="dropZone">
+      <p><i class="fas fa-cloud-upload-alt fa-2x"></i></p>
+      <p>Перетащите CSV или PDF файл сюда</p>
+    </div>
 
-        // =============== CSV ===============
-        function processCSV() {
-            resetOutput();
-            const fileInput = document.getElementById('fileInput');
-            if (!fileInput.files.length) {
-                alert('Выберите CSV-файл!');
-                return;
-            }
-            document.getElementById('loading').style.display = 'block';
+    <div class="button-container">
+      <button id="openAllButton" style="display:none;" onclick="openAllLinks()">
+        <i class="fas fa-external-link-alt"></i> Open all links
+      </button>
+      <button id="copyLinksButton" style="display:none;" onclick="copyLinks()">
+        <i class="fas fa-copy"></i> Copy all links
+      </button>
+      <button id="downloadCSVButton" style="display:none;" onclick="downloadCSV()">
+        <i class="fas fa-download"></i> Download CSV for bulk
+      </button>
+    </div>
+    
+    <input type="text" id="searchInput" list="courierSuggestions" placeholder="Search for courier ID..." onkeyup="filterCouriers()" style="display: none;">
+    <datalist id="courierSuggestions"></datalist>
 
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                document.getElementById('loading').style.display = 'none';
-                const text = event.target.result;
-                const lines = text.split('\n');
+    <div id="loading">Processing file...</div>
+    <div id="output"></div>
+  </div>
 
-                // Начинаем с i=1, чтобы пропустить заголовок
-                for (let i = 1; i < lines.length; i++) {
-                    let columns = lines[i].split(',');
-                    if (columns.length > 1 && !isNaN(columns[1].trim())) {
-                        let id = columns[1].trim();
-                        addCourierId(id);
-                    }
-                }
-                showResults();
-            };
-            reader.readAsText(fileInput.files[0]);
+  <script>
+    // Инициализация pdf.js
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+
+    let courierLinks = [];
+    let courierIds = [];
+
+    // Обработка CSV
+    function processCSVFile(file) {
+      resetOutput();
+      document.getElementById('loading').style.display = 'block';
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        document.getElementById('loading').style.display = 'none';
+        const text = event.target.result;
+        const lines = text.split('\n');
+        for (let i = 1; i < lines.length; i++) {
+          let columns = lines[i].split(',');
+          if (columns.length > 1 && !isNaN(columns[1].trim())) {
+            let id = columns[1].trim();
+            addCourierId(id);
+          }
         }
+        showResults();
+      };
+      reader.readAsText(file);
+    }
+    function processCSVFromInput() {
+      const fileInput = document.getElementById('fileInput');
+      if (!fileInput.files.length) {
+        alert('Выберите CSV-файл!');
+        return;
+      }
+      processCSVFile(fileInput.files[0]);
+    }
 
-        // =============== PDF ===============
-        async function processPDF() {
-            resetOutput();
-            const pdfInput = document.getElementById('pdfInput');
-            if (!pdfInput.files.length) {
-                alert('Выберите PDF-файл!');
-                return;
-            }
-            document.getElementById('loading').style.display = 'block';
-
-            try {
-                // Читаем файл как ArrayBuffer
-                const file = pdfInput.files[0];
-                const arrayBuffer = await file.arrayBuffer();
-
-                // Загружаем PDF
-                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                let textContentAll = '';
-
-                // Перебираем все страницы PDF
-                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                    const page = await pdf.getPage(pageNum);
-                    const textContent = await page.getTextContent();
-
-                    // Собираем текст на странице
-                    const pageText = textContent.items.map(item => item.str).join(' ');
-                    textContentAll += pageText + '\n';
-                }
-
-                // Используем RegExp для поиска шаблона: "1 6225498"
-                const regex = /(\d+)\s+(\d{6,})/g;
-                let match;
-                while ((match = regex.exec(textContentAll)) !== null) {
-                    let id = match[2];
-                    addCourierId(id);
-                }
-
-                showResults();
-                document.getElementById('loading').style.display = 'none';
-            } catch (error) {
-                console.error(error);
-                alert('Ошибка при чтении PDF-файла.');
-                document.getElementById('loading').style.display = 'none';
-            }
+    // Обработка PDF
+    async function processPDFFile(file) {
+      resetOutput();
+      document.getElementById('loading').style.display = 'block';
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let textContentAll = '';
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          const page = await pdf.getPage(pageNum);
+          const textContent = await page.getTextContent();
+          const pageText = textContent.items.map(item => item.str).join(' ');
+          textContentAll += pageText + '\n';
         }
-
-        // =============== Общая логика ===============
-        function addCourierId(id) {
-            courierIds.push(id);
-            courierLinks.push(`https://ops.wolt.com/couriers/${id}`);
+        const regex = /(\d+)\s+(\d{6,})/g;
+        let match;
+        while ((match = regex.exec(textContentAll)) !== null) {
+          let id = match[2];
+          addCourierId(id);
         }
+        showResults();
+        document.getElementById('loading').style.display = 'none';
+      } catch (error) {
+        console.error(error);
+        alert('Ошибка при чтении PDF-файла.');
+        document.getElementById('loading').style.display = 'none';
+      }
+    }
+    function processPDFFromInput() {
+      const pdfInput = document.getElementById('pdfInput');
+      if (!pdfInput.files.length) {
+        alert('Выберите PDF-файл!');
+        return;
+      }
+      processPDFFile(pdfInput.files[0]);
+    }
 
-        function showResults() {
-            if (courierIds.length > 0) {
-                document.getElementById('searchInput').style.display = 'block';
-                const outputDiv = document.getElementById('output');
-                outputDiv.innerHTML = '<h3>Courier IDs:</h3>';
-                courierIds.forEach((id, index) => {
-                    const a = document.createElement('a');
-                    a.href = courierLinks[index];
-                    a.target = '_blank';
-                    a.innerText = `${index + 1}. courier_id_${id}`;
+    // Добавление ID
+    function addCourierId(id) {
+      courierIds.push(id);
+      courierLinks.push(`https://ops.wolt.com/couriers/${id}`);
+    }
 
-                    const box = document.createElement('div');
-                    box.className = 'courier-box';
-                    box.appendChild(a);
-                    outputDiv.appendChild(box);
-                });
-                document.getElementById('openAllButton').style.display = 'block';
-                document.getElementById('copyLinksButton').style.display = 'block';
-                document.getElementById('downloadCSVButton').style.display = 'block';
+    // Вывод результатов
+    function showResults() {
+      if (courierIds.length > 0) {
+        document.getElementById('searchInput').style.display = 'block';
+        const outputDiv = document.getElementById('output');
+        outputDiv.innerHTML = '<h3>Courier IDs:</h3>';
+        courierIds.forEach((id, index) => {
+          const a = document.createElement('a');
+          a.href = courierLinks[index];
+          a.target = '_blank';
+          a.innerText = `${index + 1}. courier_id_${id}`;
+          const box = document.createElement('div');
+          box.className = 'courier-box';
+          box.appendChild(a);
+          outputDiv.appendChild(box);
+        });
+        document.getElementById('openAllButton').style.display = 'block';
+        document.getElementById('copyLinksButton').style.display = 'block';
+        document.getElementById('downloadCSVButton').style.display = 'block';
+        let datalist = document.getElementById("courierSuggestions");
+        datalist.innerHTML = "";
+        courierIds.forEach(id => {
+          let option = document.createElement("option");
+          option.value = id;
+          datalist.appendChild(option);
+        });
+      } else {
+        document.getElementById('output').innerHTML = '<p>Не найдены айди курьеров.</p>';
+      }
+    }
 
-                // Заполняем datalist для поиска
-                let datalist = document.getElementById("courierSuggestions");
-                datalist.innerHTML = "";
-                courierIds.forEach(id => {
-                    let option = document.createElement("option");
-                    option.value = id;
-                    datalist.appendChild(option);
-                });
-            } else {
-                document.getElementById('output').innerHTML = '<p>Не найдены айди курьеров.</p>';
-            }
+    // Сброс
+    function resetOutput() {
+      document.getElementById('output').innerHTML = '';
+      document.getElementById('searchInput').value = '';
+      document.getElementById('searchInput').style.display = 'none';
+      courierLinks = [];
+      courierIds = [];
+    }
+
+    // Поиск
+    function filterCouriers() {
+      let input = document.getElementById('searchInput').value.toLowerCase();
+      let boxes = document.getElementsByClassName('courier-box');
+      for (let box of boxes) {
+        if (box.innerText.toLowerCase().includes(input)) {
+          box.style.display = '';
+        } else {
+          box.style.display = 'none';
         }
+      }
+    }
 
-        function resetOutput() {
-            document.getElementById('output').innerHTML = '';
-            document.getElementById('searchInput').value = '';
-            document.getElementById('searchInput').style.display = 'none';
-            courierLinks = [];
-            courierIds = [];
+    // Открыть все ссылки
+    function openAllLinks() {
+      courierLinks.forEach(link => {
+        window.open(link, '_blank');
+      });
+    }
+
+    // Копирование
+    function copyLinks() {
+      navigator.clipboard.writeText(courierLinks.join('\n')).then(() => {
+        alert('Все ссылки скопированы в буфер обмена!');
+      });
+    }
+
+    // Скачать CSV
+    function downloadCSV() {
+      let csvContent = "courierIds\n" + courierIds.join("\n");
+      let blob = new Blob([csvContent], { type: 'text/csv' });
+      let link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "courier_ids.csv";
+      link.click();
+    }
+
+    // Обновление имени файла
+    function updateFileName(inputId, spanId) {
+      const input = document.getElementById(inputId);
+      const span = document.getElementById(spanId);
+      if (input.files.length > 0) {
+        span.textContent = input.files[0].name;
+      } else {
+        span.textContent = "Файл не выбран";
+      }
+    }
+
+    // Drag & Drop
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+    dropZone.addEventListener('dragleave', function(e) {
+      dropZone.classList.remove('dragover');
+    });
+    dropZone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      let files = e.dataTransfer.files;
+      for (let file of files) {
+        let ext = file.name.split('.').pop().toLowerCase();
+        if (ext === 'csv') {
+          processCSVFile(file);
+          document.getElementById('fileCSVName').textContent = file.name;
+        } else if (ext === 'pdf') {
+          processPDFFile(file);
+          document.getElementById('filePDFName').textContent = file.name;
+        } else {
+          alert('Unsupported file type: ' + file.name);
         }
+      }
+    });
 
-        function filterCouriers() {
-            let input = document.getElementById('searchInput').value.toLowerCase();
-            let boxes = document.getElementsByClassName('courier-box');
-            for (let box of boxes) {
-                if (box.innerText.toLowerCase().includes(input)) {
-                    box.style.display = '';
-                } else {
-                    box.style.display = 'none';
-                }
-            }
-        }
-
-        function openAllLinks() {
-            courierLinks.forEach(link => {
-                window.open(link, '_blank');
-            });
-        }
-
-        function copyLinks() {
-            navigator.clipboard.writeText(courierLinks.join('\n')).then(() => {
-                alert('Все ссылки скопированы в буфер обмена!');
-            });
-        }
-
-        function downloadCSV() {
-            let csvContent = "courierIds\n" + courierIds.join("\n");
-            let blob = new Blob([csvContent], { type: 'text/csv' });
-            let link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "courier_ids.csv";
-            link.click();
-        }
-
-        // Отображаем имя выбранного файла
-        function updateFileName(inputId, spanId) {
-            const input = document.getElementById(inputId);
-            const span = document.getElementById(spanId);
-            if (input.files.length > 0) {
-                span.textContent = input.files[0].name;
-            } else {
-                span.textContent = "Файл не выбран";
-            }
-        }
-
-        // Тёмная/светлая тема
-        function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
-            if (document.body.classList.contains('dark-mode')) {
-                localStorage.setItem('theme', 'dark');
-            } else {
-                localStorage.setItem('theme', 'light');
-            }
-        }
-
-        window.onload = function () {
-            let themeToggle = document.getElementById('themeToggle');
-            if (localStorage.getItem('theme') === 'dark') {
-                document.body.classList.add('dark-mode');
-                themeToggle.checked = true;
-            }
-        };
-    </script>
+    // Тёмная/светлая тема
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+      if (document.body.classList.contains('dark-mode')) {
+        localStorage.setItem('theme', 'dark');
+      } else {
+        localStorage.setItem('theme', 'light');
+      }
+    }
+    window.onload = function () {
+      let themeToggle = document.getElementById('themeToggle');
+      if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-mode');
+        themeToggle.checked = true;
+      }
+    };
+  </script>
 </body>
 </html>
