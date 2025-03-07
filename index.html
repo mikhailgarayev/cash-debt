@@ -4,18 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Wolt Cash Debt Checker Tool</title>
-
+  
   <!-- Подключаем pdf.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
   <!-- Подключаем Font Awesome для иконок -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
   <style>
-    /* 
-      Задаём фоновое изображение через ссылку на GitHub (raw).
-      Здесь предполагается, что файл называется background.jpg.
-      Если путь или название другое — замените URL.
-    */
+    /* Фоновое изображение из GitHub-репозитория */
     body {
       font-family: 'Inter', sans-serif;
       color: #333;
@@ -24,20 +20,18 @@
       background: #e3f2fd 
                   url('https://raw.githubusercontent.com/mikhailgarayev/cash-debt/main/background.png')
                   no-repeat
-                  center 0; /* Можно менять позицию: 'center 0' или 'center 50px' */
-      background-size: cover; /* Заполняем весь экран */
+                  center 0;
+      background-size: cover;
     }
-
     .container {
       max-width: 600px;
-      margin: 40px auto 20px auto; /* Уменьшили верхний отступ до 40px */
+      margin: 40px auto 20px auto;
       background: rgba(255,255,255,0.9);
       color: #333;
       padding: 20px;
       border-radius: 12px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
-
     h2 {
       color: #0078FF;
       margin-bottom: 20px;
@@ -47,7 +41,6 @@
       color: #0078FF;
       margin-top: 20px;
     }
-
     /* Кнопки */
     button {
       background-color: #0078FF;
@@ -66,8 +59,7 @@
       transform: scale(1.05);
       box-shadow: 0 6px 12px rgba(0, 120, 255, 0.4);
     }
-
-    /* Контейнер для блока выбора файла */
+    /* Контейнеры для выбора файлов */
     .file-input-container {
       margin: 20px 0;
       text-align: center;
@@ -78,7 +70,7 @@
       margin-bottom: 8px;
       color: #0078FF;
     }
-    /* Скрываем оригинальный input[type="file"] */
+    /* Скрываем стандартный input[type="file"] */
     .file-input-container input[type="file"] {
       display: none;
     }
@@ -105,7 +97,6 @@
       font-size: 14px;
       color: #555;
     }
-
     /* Drag & Drop зона */
     .drop-zone {
       border: 2px dashed #0078FF;
@@ -119,8 +110,7 @@
     .drop-zone.dragover {
       background-color: rgba(0, 120, 255, 0.1);
     }
-
-    /* Вывод списка курьеров */
+    /* Вывод списка курьеров или CSV */
     #output {
       margin-top: 20px;
       text-align: center;
@@ -167,7 +157,6 @@
       margin-left: auto;
       margin-right: auto;
     }
-
     /* Тёмная тема */
     .dark-mode {
       background: #121212 !important;
@@ -208,7 +197,6 @@
     .dark-mode a {
       color: #4fa3ff;
     }
-
     /* Тоггл-переключатель (солнце/луна) */
     .switch {
       position: relative;
@@ -274,7 +262,6 @@
       opacity: 1;
       transform: translateY(-50%) scale(1);
     }
-
     .button-container {
       display: flex;
       justify-content: center;
@@ -310,7 +297,7 @@
       </span>
     </label>
 
-    <!-- Контейнер для загрузки файлов с кастомными кнопками -->
+    <!-- Контейнер для загрузки CSV-файла -->
     <div class="file-input-container">
       <span class="file-label">Загрузите CSV-файл</span>
       <label for="fileInput" class="custom-file-upload">
@@ -320,6 +307,7 @@
       <input type="file" id="fileInput" accept=".csv" onchange="processCSVFromInput(); updateFileName('fileInput','fileCSVName')" />
     </div>
 
+    <!-- Контейнер для загрузки PDF-файла -->
     <div class="file-input-container">
       <span class="file-label">Загрузите PDF-файл</span>
       <label for="pdfInput" class="custom-file-upload">
@@ -329,10 +317,20 @@
       <input type="file" id="pdfInput" accept=".pdf" onchange="processPDFFromInput(); updateFileName('pdfInput','filePDFName')" />
     </div>
 
-    <!-- Зона Drag & Drop для загрузки файлов -->
+    <!-- Контейнер для загрузки JSON-файла и конвертации в CSV -->
+    <div class="file-input-container">
+      <span class="file-label">Загрузите JSON-файл для конвертации в CSV</span>
+      <label for="jsonInput" class="custom-file-upload">
+        <i class="fas fa-file-code"></i> Выбрать JSON
+      </label>
+      <span class="file-chosen" id="fileJSONName">Файл не выбран</span>
+      <input type="file" id="jsonInput" accept=".json" onchange="processJSONFromInput(); updateFileName('jsonInput','fileJSONName')" />
+    </div>
+
+    <!-- Зона Drag & Drop для загрузки файлов (CSV, PDF, JSON) -->
     <div class="drop-zone" id="dropZone">
       <p><i class="fas fa-cloud-upload-alt fa-2x"></i></p>
-      <p>Перетащите CSV или PDF файл сюда</p>
+      <p>Перетащите CSV, PDF или JSON файл сюда</p>
     </div>
 
     <div class="button-container">
@@ -374,8 +372,10 @@
         for (let i = 1; i < lines.length; i++) {
           let columns = lines[i].split(',');
           if (columns.length > 1 && !isNaN(columns[1].trim())) {
-            let id = columns[1].trim();
-            addCourierId(id);
+            let id = columns[i].trim();
+            // Если нужно извлекать courierId из второй колонки
+            let idCell = columns[1].trim();
+            addCourierId(idCell);
           }
         }
         showResults();
@@ -428,13 +428,72 @@
       processPDFFile(pdfInput.files[0]);
     }
 
-    // Добавление ID
+    // Обработка JSON и конвертация в CSV
+    function processJSONFromInput() {
+      const jsonInput = document.getElementById('jsonInput');
+      if (!jsonInput.files.length) {
+        alert('Выберите JSON-файл!');
+        return;
+      }
+      processJSONFile(jsonInput.files[0]);
+    }
+    function processJSONFile(file) {
+      resetOutput();
+      document.getElementById('loading').style.display = 'block';
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        try {
+          const jsonData = JSON.parse(event.target.result);
+          const csv = convertJSONtoCSV(jsonData);
+          document.getElementById('loading').style.display = 'none';
+          const outputDiv = document.getElementById('output');
+          outputDiv.innerHTML = '<h3>Converted CSV:</h3><textarea id="csvOutput" rows="10" style="width:100%;">' + csv + '</textarea>';
+          const downloadBtn = document.createElement("button");
+          downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download Converted CSV';
+          downloadBtn.onclick = function() {
+            downloadConvertedCSV(csv);
+          };
+          outputDiv.appendChild(downloadBtn);
+        } catch (error) {
+          alert("Ошибка при обработке JSON: " + error.message);
+          document.getElementById('loading').style.display = 'none';
+        }
+      };
+      reader.readAsText(file);
+    }
+    function convertJSONtoCSV(jsonData) {
+      let arr = Array.isArray(jsonData) ? jsonData : [jsonData];
+      if (arr.length === 0) return "";
+      const keys = Object.keys(arr[0]);
+      const csvRows = [];
+      csvRows.push(keys.join(','));
+      for (let obj of arr) {
+        const row = keys.map(k => {
+          let val = obj[k];
+          if (typeof val === 'string') {
+            val = '"' + val.replace(/"/g, '""') + '"';
+          }
+          return val;
+        });
+        csvRows.push(row.join(','));
+      }
+      return csvRows.join('\n');
+    }
+    function downloadConvertedCSV(csvContent) {
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = "converted.csv";
+      link.click();
+    }
+
+    // Добавление ID и формирование ссылки
     function addCourierId(id) {
       courierIds.push(id);
       courierLinks.push(`https://ops.wolt.com/couriers/${id}`);
     }
 
-    // Вывод результатов
+    // Вывод результатов (для CSV/PDF)
     function showResults() {
       if (courierIds.length > 0) {
         document.getElementById('searchInput').style.display = 'block';
@@ -465,7 +524,7 @@
       }
     }
 
-    // Сброс
+    // Сброс вывода и данных
     function resetOutput() {
       document.getElementById('output').innerHTML = '';
       document.getElementById('searchInput').value = '';
@@ -474,7 +533,7 @@
       courierIds = [];
     }
 
-    // Поиск
+    // Функция поиска по курьерам
     function filterCouriers() {
       let input = document.getElementById('searchInput').value.toLowerCase();
       let boxes = document.getElementsByClassName('courier-box');
@@ -487,21 +546,21 @@
       }
     }
 
-    // Открыть все ссылки
+    // Функция открытия всех ссылок
     function openAllLinks() {
       courierLinks.forEach(link => {
         window.open(link, '_blank');
       });
     }
 
-    // Копирование
+    // Копирование ссылок в буфер обмена
     function copyLinks() {
       navigator.clipboard.writeText(courierLinks.join('\n')).then(() => {
         alert('Все ссылки скопированы в буфер обмена!');
       });
     }
 
-    // Скачать CSV
+    // Скачать CSV-файл с ID курьеров
     function downloadCSV() {
       let csvContent = "courierIds\n" + courierIds.join("\n");
       let blob = new Blob([csvContent], { type: 'text/csv' });
@@ -511,7 +570,7 @@
       link.click();
     }
 
-    // Обновление имени файла
+    // Обновление имени выбранного файла
     function updateFileName(inputId, spanId) {
       const input = document.getElementById(inputId);
       const span = document.getElementById(spanId);
@@ -543,13 +602,16 @@
         } else if (ext === 'pdf') {
           processPDFFile(file);
           document.getElementById('filePDFName').textContent = file.name;
+        } else if (ext === 'json') {
+          processJSONFile(file);
+          document.getElementById('fileJSONName').textContent = file.name;
         } else {
           alert('Unsupported file type: ' + file.name);
         }
       }
     });
 
-    // Тёмная/светлая тема
+    // Переключатель темы
     function toggleTheme() {
       document.body.classList.toggle('dark-mode');
       if (document.body.classList.contains('dark-mode')) {
