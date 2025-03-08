@@ -4,30 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Wolt Cash Debt Checker Tool</title>
-
+  
   <!-- Подключаем pdf.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
   <!-- Подключаем Font Awesome для иконок -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
   <style>
-    /* ======= Ваши основные стили ======= */
+    /* ======= Основные стили ======= */
     body {
       font-family: 'Inter', sans-serif;
       color: #333;
       text-align: center;
       padding: 20px;
-
-      /* Задайте ваш фон (цвет/изображение) */
-      background: #00adee; /* пример голубого фона */
-         background: #e3f2fd 
-                     url('https://raw.githubusercontent.com/mikhailgarayev/cash-debt/main/background.png')
-                     no-repeat
-                     center 0;
-         background-size: cover;
-     
+      background: #e3f2fd 
+                  url('https://raw.githubusercontent.com/mikhailgarayev/cash-debt/main/background.png')
+                  no-repeat
+                  center 0;
+      background-size: cover;
     }
-
     .container {
       max-width: 600px;
       margin: 40px auto 20px auto;
@@ -35,7 +30,7 @@
       color: #333;
       padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
     h2 {
       color: #0078FF;
@@ -47,7 +42,7 @@
       margin-top: 20px;
     }
 
-    /* Кнопки (для OpenAll, CopyAll, DownloadCSV) */
+    /* Кнопки для общих действий */
     button {
       background-color: #0078FF;
       color: white;
@@ -58,15 +53,15 @@
       font-size: 16px;
       font-weight: bold;
       transition: 0.3s;
-      box-shadow: 0 4px 8px rgba(0, 120, 255, 0.3);
+      box-shadow: 0 4px 8px rgba(0,120,255,0.3);
     }
     button:hover {
       background-color: #005bb5;
       transform: scale(1.05);
-      box-shadow: 0 6px 12px rgba(0, 120, 255, 0.4);
+      box-shadow: 0 6px 12px rgba(0,120,255,0.4);
     }
 
-    /* Дроп-зона (и скрытый input[type="file"]) */
+    /* Дроп-зона (кликабельная) */
     .drop-zone {
       border: 2px dashed #0078FF;
       border-radius: 12px;
@@ -75,16 +70,16 @@
       color: #0078FF;
       margin: 20px auto;
       transition: background-color 0.3s;
-      cursor: pointer; /* чтобы было видно, что можно кликать */
+      cursor: pointer;
     }
     .drop-zone.dragover {
-      background-color: rgba(0, 120, 255, 0.1);
+      background-color: rgba(0,120,255,0.1);
     }
     #hiddenFileInput {
       display: none;
     }
 
-    /* Вывод списка курьеров или CSV */
+    /* Вывод результатов */
     #output {
       margin-top: 20px;
       text-align: center;
@@ -99,12 +94,12 @@
       text-align: center;
       font-size: 16px;
       font-weight: bold;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       transition: 0.3s;
     }
     .courier-box:hover {
       transform: scale(1.05);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
     }
     a {
       color: #0078FF;
@@ -140,7 +135,7 @@
     .dark-mode .container {
       background: #1e1e1e;
       color: white;
-      box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 10px rgba(255,255,255,0.1);
     }
     .dark-mode .courier-box {
       background: #2c2c2c;
@@ -158,7 +153,7 @@
       color: #4fa3ff;
     }
 
-    /* Тоггл-переключатель (солнце/луна) */
+    /* Переключатель темы */
     .switch {
       position: relative;
       display: inline-block;
@@ -244,6 +239,15 @@
     .button-container button:hover {
       background-color: #005bb5;
     }
+
+    /* Контейнер для кнопок неуспешных курьеров */
+    .failures-button-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px; /* расстояние между кнопками */
+      margin-top: 10px; /* отступ сверху */
+    }
   </style>
 </head>
 <body>
@@ -295,16 +299,15 @@
     let courierLinks = [];
     let courierIds = [];
 
-    // ---------- ОБРАБОТКА ФАЙЛА ПРИ КЛИКЕ ----------
+    // ----- ОБРАБОТКА ФАЙЛА ПРИ КЛИКЕ -----
     function processFileFromInput() {
       const fileInput = document.getElementById('hiddenFileInput');
       if (!fileInput.files.length) return;
-
       const file = fileInput.files[0];
       detectFileAndProcess(file);
     }
 
-    // ---------- ОБРАБОТКА ФАЙЛА ПРИ DRAG & DROP ----------
+    // ----- ОБРАБОТКА ФАЙЛА ПРИ DRAG & DROP -----
     const dropZone = document.getElementById('dropZone');
     dropZone.addEventListener('dragover', function(e) {
       e.preventDefault();
@@ -321,7 +324,7 @@
       detectFileAndProcess(files[0]);
     });
 
-    // ---------- ОПРЕДЕЛЕНИЕ ТИПА ФАЙЛА ----------
+    // ----- ОПРЕДЕЛЕНИЕ ТИПА ФАЙЛА -----
     function detectFileAndProcess(file) {
       resetOutput();
       const ext = file.name.split('.').pop().toLowerCase();
@@ -336,7 +339,7 @@
       }
     }
 
-    // ---------- ОБРАБОТКА CSV (колонка "courierIds") ----------
+    // ----- ОБРАБОТКА CSV (колонка "courierIds") -----
     function processCSVFile(file) {
       document.getElementById('loading').style.display = 'block';
       const reader = new FileReader();
@@ -368,7 +371,7 @@
       reader.readAsText(file);
     }
 
-    // ---------- ОБРАБОТКА PDF ----------
+    // ----- ОБРАБОТКА PDF -----
     async function processPDFFile(file) {
       document.getElementById('loading').style.display = 'block';
       try {
@@ -397,33 +400,27 @@
       }
     }
 
-    // ---------- ОБРАБОТКА JSON + КОНВЕРТАЦИЯ В CSV ----------
+    // ----- ОБРАБОТКА JSON + КОНВЕРТАЦИЯ В CSV -----
     function processJSONFile(file) {
       document.getElementById('loading').style.display = 'block';
       const reader = new FileReader();
       reader.onload = function(event) {
         try {
           const jsonData = JSON.parse(event.target.result);
-          // Используем улучшенную функцию для DisableCouriers
-          // или fallback на универсальную, если структура другая
-          let csv;
           if (isDisableCouriersStructure(jsonData)) {
-            csv = convertDisableCouriersJSONtoCSV(jsonData);
+            showDisableCouriersResults(jsonData);
           } else {
-            csv = convertGenericJSONtoCSV(jsonData);
+            const csv = convertGenericJSONtoCSV(jsonData);
+            document.getElementById('loading').style.display = 'none';
+            const outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = '<h3>Converted CSV:</h3><textarea id="csvOutput" rows="10" style="width:100%;">' + csv + '</textarea>';
+            const downloadBtn = document.createElement("button");
+            downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download Converted CSV';
+            downloadBtn.onclick = function() {
+              downloadConvertedCSV(csv);
+            };
+            outputDiv.appendChild(downloadBtn);
           }
-          document.getElementById('loading').style.display = 'none';
-
-          const outputDiv = document.getElementById('output');
-          outputDiv.innerHTML = '<h3>Converted CSV:</h3><textarea id="csvOutput" rows="10" style="width:100%;">' + csv + '</textarea>';
-
-          const downloadBtn = document.createElement("button");
-          downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download Converted CSV';
-          downloadBtn.onclick = function() {
-            downloadConvertedCSV(csv);
-          };
-          outputDiv.appendChild(downloadBtn);
-
         } catch (error) {
           alert("Ошибка при обработке JSON: " + error.message);
           document.getElementById('loading').style.display = 'none';
@@ -440,45 +437,110 @@
       );
     }
 
-    // Специализированная функция для структуры {successfulIds:[], failures:[], operationType:"..."}
-    function convertDisableCouriersJSONtoCSV(jsonData) {
-      let rows = [];
-      // Добавляем строки для каждого ID из successfulIds
-      if (Array.isArray(jsonData.successfulIds)) {
-        jsonData.successfulIds.forEach(id => {
-          rows.push({
-            operationType: jsonData.operationType,
-            successfulIds: id.toString(),
-            failures_courierId: "",
-            failures_message: ""
-          });
-        });
-      }
-      // Добавляем строки для каждого объекта из failures
-      if (Array.isArray(jsonData.failures)) {
-        jsonData.failures.forEach(f => {
-          rows.push({
-            operationType: jsonData.operationType,
-            successfulIds: "",
-            failures_courierId: f.courierId?.toString() || "",
-            failures_message: f.message || ""
-          });
-        });
-      }
-      let header = ["operationType","successfulIds","failures_courierId","failures_message"];
-      let csvRows = [];
-      csvRows.push(header.join(','));
-      rows.forEach(obj => {
-        let row = header.map(h => {
-          let val = obj[h] || "";
-          if (typeof val === 'string') {
-            val = '"' + val.replace(/"/g, '""') + '"';
-          }
-          return val;
-        });
-        csvRows.push(row.join(','));
+    // ----- Функция для отображения результатов из DisableCouriers JSON -----
+    // Отображаются два списка: успешные и неуспешные (только айди)
+    // Для неуспешных добавлены кнопки: открыть все и скопировать все ссылки
+    function showDisableCouriersResults(jsonData) {
+      document.getElementById('loading').style.display = 'none';
+      const outputDiv = document.getElementById('output');
+      outputDiv.innerHTML = '';
+
+      // ----- Успешные курьеры -----
+      const successHeader = document.createElement('h3');
+      successHeader.innerText = "Successful IDs:";
+      outputDiv.appendChild(successHeader);
+
+      jsonData.successfulIds.forEach(id => {
+        const link = document.createElement('a');
+        link.href = `https://ops.wolt.com/couriers/${id}`;
+        link.target = '_blank';
+        link.innerText = id;
+        const box = document.createElement('div');
+        box.className = 'courier-box';
+        box.appendChild(link);
+        outputDiv.appendChild(box);
       });
-      return csvRows.join('\n');
+
+      const successDownloadBtn = document.createElement("button");
+      successDownloadBtn.innerHTML = '<i class="fas fa-download"></i> Download Successful CSV';
+      successDownloadBtn.onclick = function() {
+        const csv = convertSuccessfulCSV(jsonData.successfulIds);
+        downloadConvertedCSV(csv, "successful.csv");
+      };
+      outputDiv.appendChild(successDownloadBtn);
+
+      // ----- Неуспешные курьеры -----
+      const failureHeader = document.createElement('h3');
+      failureHeader.innerText = "Unsuccessful IDs:";
+      outputDiv.appendChild(failureHeader);
+
+      jsonData.failures.forEach(failure => {
+        const link = document.createElement('a');
+        link.href = `https://ops.wolt.com/couriers/${failure.courierId}`;
+        link.target = '_blank';
+        link.innerText = failure.courierId;
+        const box = document.createElement('div');
+        box.className = 'courier-box';
+        box.appendChild(link);
+        outputDiv.appendChild(box);
+      });
+
+      // --- Создаём контейнер для кнопок неуспешных курьеров ---
+      const failuresButtonsContainer = document.createElement("div");
+      failuresButtonsContainer.className = "failures-button-container";
+
+      // Кнопка открыть все неуспешные
+      const openUnsuccessfulBtn = document.createElement("button");
+      openUnsuccessfulBtn.innerHTML = '<i class="fas fa-external-link-alt"></i> Open all unsuccessful links';
+      openUnsuccessfulBtn.onclick = function() {
+          jsonData.failures.forEach(f => {
+              const url = `https://ops.wolt.com/couriers/${f.courierId}`;
+              window.open(url, '_blank');
+          });
+      };
+      failuresButtonsContainer.appendChild(openUnsuccessfulBtn);
+
+      // Кнопка скопировать все неуспешные
+      const copyUnsuccessfulBtn = document.createElement("button");
+      copyUnsuccessfulBtn.innerHTML = '<i class="fas fa-copy"></i> Copy all unsuccessful links';
+      copyUnsuccessfulBtn.onclick = function() {
+          let links = jsonData.failures.map(f => `https://ops.wolt.com/couriers/${f.courierId}`).join('\n');
+          navigator.clipboard.writeText(links).then(() => {
+              alert('Unsuccessful links copied to clipboard!');
+          });
+      };
+      failuresButtonsContainer.appendChild(copyUnsuccessfulBtn);
+
+      // Кнопка скачать неуспешные
+      const failuresDownloadBtn = document.createElement("button");
+      failuresDownloadBtn.innerHTML = '<i class="fas fa-download"></i> Download Unsuccessful CSV';
+      failuresDownloadBtn.onclick = function() {
+        const csv = convertFailuresCSV(jsonData.failures);
+        downloadConvertedCSV(csv, "failures.csv");
+      };
+      failuresButtonsContainer.appendChild(failuresDownloadBtn);
+
+      // Добавляем контейнер с тремя кнопками в output
+      outputDiv.appendChild(failuresButtonsContainer);
+    }
+
+    function convertSuccessfulCSV(successfulIds) {
+      let csvRows = [];
+      csvRows.push("courierIds");
+      successfulIds.forEach(id => {
+        csvRows.push(id);
+      });
+      return csvRows.join("\n");
+    }
+
+    // Функция конвертации неуспешных – выводим только courierId
+    function convertFailuresCSV(failures) {
+      let csvRows = [];
+      csvRows.push("courierIds");
+      failures.forEach(f => {
+        csvRows.push(f.courierId);
+      });
+      return csvRows.join("\n");
     }
 
     // Универсальная функция для «обычного» JSON
@@ -492,7 +554,6 @@
         const row = keys.map(k => {
           let val = obj[k];
           if (typeof val === 'object') {
-            // если внутри объект/массив, превращаем в JSON-строку
             val = JSON.stringify(val);
           }
           if (typeof val === 'string') {
@@ -504,11 +565,13 @@
       }
       return csvRows.join('\n');
     }
-    function downloadConvertedCSV(csvContent) {
+
+    function downloadConvertedCSV(csvContent, filename) {
+      filename = filename || "converted.csv";
       const blob = new Blob([csvContent], { type: 'text/csv' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = "converted.csv";
+      link.download = filename;
       link.click();
     }
 
