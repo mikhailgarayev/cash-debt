@@ -11,18 +11,23 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
   <style>
-    /* Фоновое изображение из GitHub-репозитория */
+    /* ======= Ваши основные стили ======= */
     body {
       font-family: 'Inter', sans-serif;
       color: #333;
       text-align: center;
       padding: 20px;
-      background: #e3f2fd 
-                  url('https://raw.githubusercontent.com/mikhailgarayev/cash-debt/main/background.png')
-                  no-repeat
-                  center 0;
-      background-size: cover;
+
+      /* Задайте ваш фон (цвет/изображение) */
+      background: #00adee; /* пример голубого фона */
+         background: #e3f2fd 
+                     url('https://raw.githubusercontent.com/mikhailgarayev/cash-debt/main/background.png')
+                     no-repeat
+                     center 0;
+         background-size: cover;
+     
     }
+
     .container {
       max-width: 600px;
       margin: 40px auto 20px auto;
@@ -42,7 +47,7 @@
       margin-top: 20px;
     }
 
-    /* Кнопки */
+    /* Кнопки (для OpenAll, CopyAll, DownloadCSV) */
     button {
       background-color: #0078FF;
       color: white;
@@ -75,7 +80,6 @@
     .drop-zone.dragover {
       background-color: rgba(0, 120, 255, 0.1);
     }
-    /* Скрытый input для клика */
     #hiddenFileInput {
       display: none;
     }
@@ -137,12 +141,6 @@
       background: #1e1e1e;
       color: white;
       box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
-    }
-    .dark-mode input[type="file"], 
-    .dark-mode input[type="text"] {
-      background: #1e1e1e;
-      color: white;
-      border-color: #0078FF;
     }
     .dark-mode .courier-box {
       background: #2c2c2c;
@@ -406,16 +404,26 @@
       reader.onload = function(event) {
         try {
           const jsonData = JSON.parse(event.target.result);
-          const csv = convertJSONtoCSV(jsonData);
+          // Используем улучшенную функцию для DisableCouriers
+          // или fallback на универсальную, если структура другая
+          let csv;
+          if (isDisableCouriersStructure(jsonData)) {
+            csv = convertDisableCouriersJSONtoCSV(jsonData);
+          } else {
+            csv = convertGenericJSONtoCSV(jsonData);
+          }
           document.getElementById('loading').style.display = 'none';
+
           const outputDiv = document.getElementById('output');
           outputDiv.innerHTML = '<h3>Converted CSV:</h3><textarea id="csvOutput" rows="10" style="width:100%;">' + csv + '</textarea>';
+
           const downloadBtn = document.createElement("button");
           downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download Converted CSV';
           downloadBtn.onclick = function() {
             downloadConvertedCSV(csv);
           };
           outputDiv.appendChild(downloadBtn);
+
         } catch (error) {
           alert("Ошибка при обработке JSON: " + error.message);
           document.getElementById('loading').style.display = 'none';
@@ -423,7 +431,58 @@
       };
       reader.readAsText(file);
     }
-    function convertJSONtoCSV(jsonData) {
+
+    function isDisableCouriersStructure(json) {
+      return (
+        Array.isArray(json.successfulIds) &&
+        Array.isArray(json.failures) &&
+        typeof json.operationType === 'string'
+      );
+    }
+
+    // Специализированная функция для структуры {successfulIds:[], failures:[], operationType:"..."}
+    function convertDisableCouriersJSONtoCSV(jsonData) {
+      let rows = [];
+      // Добавляем строки для каждого ID из successfulIds
+      if (Array.isArray(jsonData.successfulIds)) {
+        jsonData.successfulIds.forEach(id => {
+          rows.push({
+            operationType: jsonData.operationType,
+            successfulIds: id.toString(),
+            failures_courierId: "",
+            failures_message: ""
+          });
+        });
+      }
+      // Добавляем строки для каждого объекта из failures
+      if (Array.isArray(jsonData.failures)) {
+        jsonData.failures.forEach(f => {
+          rows.push({
+            operationType: jsonData.operationType,
+            successfulIds: "",
+            failures_courierId: f.courierId?.toString() || "",
+            failures_message: f.message || ""
+          });
+        });
+      }
+      let header = ["operationType","successfulIds","failures_courierId","failures_message"];
+      let csvRows = [];
+      csvRows.push(header.join(','));
+      rows.forEach(obj => {
+        let row = header.map(h => {
+          let val = obj[h] || "";
+          if (typeof val === 'string') {
+            val = '"' + val.replace(/"/g, '""') + '"';
+          }
+          return val;
+        });
+        csvRows.push(row.join(','));
+      });
+      return csvRows.join('\n');
+    }
+
+    // Универсальная функция для «обычного» JSON
+    function convertGenericJSONtoCSV(jsonData) {
       let arr = Array.isArray(jsonData) ? jsonData : [jsonData];
       if (arr.length === 0) return "";
       const keys = Object.keys(arr[0]);
@@ -432,6 +491,10 @@
       for (let obj of arr) {
         const row = keys.map(k => {
           let val = obj[k];
+          if (typeof val === 'object') {
+            // если внутри объект/массив, превращаем в JSON-строку
+            val = JSON.stringify(val);
+          }
           if (typeof val === 'string') {
             val = '"' + val.replace(/"/g, '""') + '"';
           }
@@ -449,7 +512,7 @@
       link.click();
     }
 
-    // ---------- Общая логика ----------
+    // ---------- Общая логика для курьеров (CSV/PDF) ----------
     function addCourierId(id) {
       courierIds.push(id);
       courierLinks.push(`https://ops.wolt.com/couriers/${id}`);
