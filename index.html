@@ -3,105 +3,191 @@
 <head>
   <meta charset="UTF-8">
   <title>Управление оффлайн-заведениями</title>
-  <style>
-    body { 
-      font-family: Arial, sans-serif; 
-      margin: 20px; 
-    }
-    .form-section, .dashboard { 
-      margin-bottom: 30px; 
-    }
-    table { 
-      width: 100%; 
-      border-collapse: collapse; 
-      margin-bottom: 20px;
-    }
-    th, td { 
-      border: 1px solid #ccc; 
-      padding: 10px; 
-      text-align: center; 
-    }
-    th { 
-      background-color: #f2f2f2; 
-    }
-    button { 
-      cursor: pointer; 
-    }
-    select, input { 
-      padding: 5px; 
-      margin: 5px 0;
-    }
-  </style>
-  
   <!-- Подключаем Firebase SDK (compat-версии для простоты) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <style>
+    /* Сброс базовых отступов */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Яркий фон в стиле Wolt */
+    body {
+      background: #00c2ff; /* Цвет фона, напоминающий фирменный цвет Wolt */
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;          /* Разместим содержимое по центру */
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Заголовок сайта */
+    h1.site-title {
+      color: #fff;
+      font-size: 2rem;
+      margin-top: 40px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    /* Основная «карточка», где размещается форма и таблицы */
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 900px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      padding: 30px;
+      margin-bottom: 40px;
+    }
+
+    /* Заголовки внутри карточки */
+    h2 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    /* Секции формы и дэшбоарда */
+    .form-section, .dashboard {
+      margin-bottom: 30px;
+    }
+
+    /* Стили формы */
+    form label {
+      display: block;
+      margin: 10px 0 0;
+      color: #333;
+    }
+
+    select, input[type="text"], input[type="url"], input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #00c2ff;
+      border: none;
+      border-radius: 5px;
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #00a9dc;
+    }
+
+    /* Таблицы */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+    }
+
+    th, td {
+      border: 1px solid #eee;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #f7f7f7;
+      color: #333;
+    }
+
+    /* Пример стилей для ссылок */
+    a {
+      color: #00c2ff;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* Дополнительные отступы */
+    .dashboard h2 {
+      margin-top: 0;
+    }
+  </style>
 </head>
 <body>
-  <h1>Управление оффлайн-заведениями</h1>
-  
-  <!-- Форма для добавления заведения -->
-  <div class="form-section">
-    <h2>Добавить заведение</h2>
-    <form id="addEstablishmentForm">
-      <label>
-        Имя заведения: <input type="text" id="name" required>
-      </label><br><br>
-      <label>
-        Ссылка: <input type="url" id="url" required>
-      </label><br><br>
-      <label>
-        Время оффлайн (в минутах): <input type="number" id="offlineTime" required>
-      </label><br><br>
-      <label>
-        Причина перевода в оффлайн:<br>
-        <select id="reason" required>
-          <option value="" disabled selected>Выберите причину</option>
-          <option value="Integration issues / Tech issues">Integration issues / Tech issues</option>
-          <option value="Venue sets itself online">Venue sets itself online</option>
-        </select>
-      </label><br><br>
-      <button type="submit">Добавить заведение</button>
-    </form>
-  </div>
-  
-  <!-- Дэшбоард с двумя разделами: Активные и История -->
-  <div class="dashboard">
-    <h2>Активные заведения</h2>
-    <table id="activeTable">
-      <thead>
-        <tr>
-          <th>Имя заведения</th>
-          <th>Причина</th>
-          <th>Ссылка</th>
-          <th>Оставшееся время</th>
-          <th>Действия</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Активные заведения подставляются динамически -->
-      </tbody>
-    </table>
-    
-    <h2>История (Истекшие заведения)</h2>
-    <table id="historyTable">
-      <thead>
-        <tr>
-          <th>Имя заведения</th>
-          <th>Причина</th>
-          <th>Ссылка</th>
-          <th>Оффлайн до</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- История подставляется динамически -->
-      </tbody>
-    </table>
+  <h1 class="site-title">Управление оффлайн-заведениями</h1>
+
+  <!-- Основная «карточка» (контейнер) -->
+  <div class="card">
+    <!-- Форма для добавления заведения -->
+    <div class="form-section">
+      <h2>Добавить заведение</h2>
+      <form id="addEstablishmentForm">
+        <label>
+          Имя заведения:
+          <input type="text" id="name" required>
+        </label>
+        <label>
+          Ссылка:
+          <input type="url" id="url" required>
+        </label>
+        <label>
+          Время оффлайн (в минутах):
+          <input type="number" id="offlineTime" required>
+        </label>
+        <label>
+          Причина перевода в оффлайн:
+          <select id="reason" required>
+            <option value="" disabled selected>Выберите причину</option>
+            <option value="Integration issues / Tech issues">Integration issues / Tech issues</option>
+            <option value="Venue sets itself online">Venue sets itself online</option>
+          </select>
+        </label>
+        <button type="submit">Добавить заведение</button>
+      </form>
+    </div>
+
+    <!-- Дэшбоард с двумя разделами: Активные и История -->
+    <div class="dashboard">
+      <h2>Активные заведения</h2>
+      <table id="activeTable">
+        <thead>
+          <tr>
+            <th>Имя заведения</th>
+            <th>Причина</th>
+            <th>Ссылка</th>
+            <th>Оставшееся время</th>
+            <th>Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Активные заведения подставляются динамически -->
+        </tbody>
+      </table>
+      
+      <h2>История (Истекшие заведения)</h2>
+      <table id="historyTable">
+        <thead>
+          <tr>
+            <th>Имя заведения</th>
+            <th>Причина</th>
+            <th>Ссылка</th>
+            <th>Оффлайн до</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- История подставляется динамически -->
+        </tbody>
+      </table>
+    </div>
   </div>
   
   <script>
     // ===================== 1. ИНИЦИАЛИЗАЦИЯ FIREBASE =====================
-    // Ваши данные из Firebase Console:
     const firebaseConfig = {
       apiKey: "AIzaSyBaQYzQmld5VNA_wSI8nDtqENN0TgcNqeA",
       authDomain: "adminsonly.firebaseapp.com",
@@ -111,7 +197,6 @@
       messagingSenderId: "194528429901",
       appId: "1:194528429901:web:805ca2f1dd0feca2de1904"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
@@ -145,7 +230,7 @@
       });
     }
 
-    // ===================== 4. ПОДПИСКА НА ИЗМЕНЕНИЯ (ОБЩАЯ ФУНКЦИЯ) =====================
+    // ===================== 4. ПОДПИСКА НА ИЗМЕНЕНИЯ =====================
     function subscribeToDashboard() {
       db.ref("establishments").on("value", snapshot => {
         const data = snapshot.val();
@@ -163,7 +248,7 @@
       
       establishments.forEach(est => {
         if (est.expired) {
-          // Рисуем строку для истории
+          // Запись в историю
           const tr = document.createElement("tr");
 
           const tdName = document.createElement("td");
@@ -188,7 +273,7 @@
 
           historyTbody.appendChild(tr);
         } else {
-          // Рисуем строку для активных заведений
+          // Активная запись
           const tr = document.createElement("tr");
           
           const tdName = document.createElement("td");
@@ -243,7 +328,6 @@
                   timerTd.textContent = `${minutes} мин ${seconds} сек`;
                 } else {
                   timerTd.textContent = "Время истекло";
-                  // Если время истекло – переводим заведение в историю (устанавливаем expired)
                   db.ref("establishments/" + est.id).update({ expired: true }, error => {
                     if (!error) {
                       const text = `Оффлайн время истекло для заведения: ${est.name}.
@@ -295,7 +379,7 @@
       const name = document.getElementById("name").value;
       const url = document.getElementById("url").value;
       const offlineTimeMinutes = parseInt(document.getElementById("offlineTime").value, 10);
-      const reason = document.getElementById("reason").value;  // Получаем выбранную причину
+      const reason = document.getElementById("reason").value;  
       const now = new Date();
       const offlineUntil = new Date(now.getTime() + offlineTimeMinutes * 60 * 1000);
       
