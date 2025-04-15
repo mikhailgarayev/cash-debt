@@ -1,400 +1,668 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Управление оффлайн-заведениями</title>
-  <!-- Подключаем Firebase SDK (compat-версии для простоты) -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wolt Cash Debt Checker Tool</title>
+  
+  <!-- Подключаем pdf.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+  <!-- Подключаем Font Awesome для иконок -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
   <style>
-    /* Сброс базовых отступов */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    /* Яркий фон в стиле Wolt */
+    /* ======= Основные стили ======= */
     body {
-      background: #00c2ff; /* Цвет фона, напоминающий фирменный цвет Wolt */
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      min-height: 100vh;
-      display: flex;          /* Разместим содержимое по центру */
-      flex-direction: column;
-      align-items: center;
-    }
-
-    /* Заголовок сайта */
-    h1.site-title {
-      color: #fff;
-      font-size: 2rem;
-      margin-top: 40px;
-      margin-bottom: 20px;
+      font-family: 'Inter', sans-serif;
+      color: #333;
       text-align: center;
+      padding: 20px;
+      background: #e3f2fd 
+                  url('https://raw.githubusercontent.com/mikhailgarayev/cash-debt/main/background.png')
+                  no-repeat
+                  center 0;
+      background-size: cover;
     }
-
-    /* Основная «карточка», где размещается форма и таблицы */
-    .card {
-      background: #fff;
-      border-radius: 10px;
-      width: 90%;
-      max-width: 900px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-      padding: 30px;
-      margin-bottom: 40px;
+    .container {
+      max-width: 600px;
+      margin: 40px auto 20px auto;
+      background: rgba(255,255,255,0.9);
+      color: #333;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
-
-    /* Заголовки внутри карточки */
     h2 {
-      margin-bottom: 10px;
-      color: #333;
+      color: #0078FF;
+      margin-bottom: 20px;
     }
-
-    /* Секции формы и дэшбоарда */
-    .form-section, .dashboard {
-      margin-bottom: 30px;
-    }
-
-    /* Стили формы */
-    form label {
-      display: block;
-      margin: 10px 0 0;
-      color: #333;
-    }
-
-    select, input[type="text"], input[type="url"], input[type="number"] {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    button {
-      margin-top: 10px;
-      padding: 10px 20px;
-      background-color: #00c2ff;
-      border: none;
-      border-radius: 5px;
-      color: #fff;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-    }
-
-    button:hover {
-      background-color: #00a9dc;
-    }
-
-    /* Таблицы */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #fff;
-    }
-
-    th, td {
-      border: 1px solid #eee;
-      padding: 10px;
+    h3 {
       text-align: center;
+      color: #0078FF;
+      margin-top: 20px;
     }
 
-    th {
-      background-color: #f7f7f7;
-      color: #333;
+    /* Кнопки для общих действий */
+    button {
+      background-color: #0078FF;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: 0.3s;
+      box-shadow: 0 4px 8px rgba(0,120,255,0.3);
+    }
+    button:hover {
+      background-color: #005bb5;
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(0,120,255,0.4);
     }
 
-    /* Пример стилей для ссылок */
+    /* Дроп-зона (кликабельная) */
+    .drop-zone {
+      border: 2px dashed #0078FF;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      color: #0078FF;
+      margin: 20px auto;
+      transition: background-color 0.3s;
+      cursor: pointer;
+    }
+    .drop-zone.dragover {
+      background-color: rgba(0,120,255,0.1);
+    }
+    #hiddenFileInput {
+      display: none;
+    }
+
+    /* Вывод результатов */
+    #output {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 16px;
+    }
+    .courier-box {
+      background: white;
+      padding: 12px;
+      border-radius: 10px;
+      margin: 5px auto;
+      max-width: 320px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: 0.3s;
+    }
+    .courier-box:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
     a {
-      color: #00c2ff;
+      color: #0078FF;
       text-decoration: none;
+      font-weight: bold;
+      display: block;
     }
     a:hover {
       text-decoration: underline;
     }
+    #loading {
+      display: none;
+      font-size: 16px;
+      color: #0078FF;
+      margin-top: 10px;
+    }
+    #searchInput {
+      padding: 8px;
+      margin-top: 10px;
+      width: 80%;
+      border: 1px solid #0078FF;
+      border-radius: 4px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
 
-    /* Дополнительные отступы */
-    .dashboard h2 {
-      margin-top: 0;
+    /* Тёмная тема */
+    .dark-mode {
+      background: #121212 !important;
+      color: white;
+    }
+    .dark-mode .container {
+      background: #1e1e1e;
+      color: white;
+      box-shadow: 0 4px 10px rgba(255,255,255,0.1);
+    }
+    .dark-mode .courier-box {
+      background: #2c2c2c;
+      border: 1px solid #444;
+      color: white;
+    }
+    .dark-mode button {
+      background-color: #333;
+      color: white;
+    }
+    .dark-mode button:hover {
+      background-color: #444;
+    }
+    .dark-mode a {
+      color: #4fa3ff;
+    }
+
+    /* Переключатель темы */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+      margin-top: 10px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: background-color 0.4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: #fff;
+      transition: transform 0.4s;
+      border-radius: 50%;
+    }
+    .sun,
+    .moon {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      pointer-events: none;
+      transition: opacity 0.4s, transform 0.4s;
+    }
+    .sun {
+      left: 8px;
+      opacity: 1;
+      transform: translateY(-50%) scale(1);
+    }
+    .moon {
+      right: 8px;
+      opacity: 0;
+      transform: translateY(-50%) scale(0.5);
+    }
+    input:checked + .slider {
+      background-color: #0078FF;
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+    input:checked + .slider .sun {
+      opacity: 0;
+      transform: translateY(-50%) scale(0.5);
+    }
+    input:checked + .slider .moon {
+      opacity: 1;
+      transform: translateY(-50%) scale(1);
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 15px;
+    }
+    .button-container button {
+      padding: 10px 15px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background-color: #0078FF;
+      color: white;
+      transition: 0.3s;
+    }
+    .button-container button:hover {
+      background-color: #005bb5;
+    }
+
+    /* Контейнер для кнопок неуспешных курьеров */
+    .failures-button-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px; /* расстояние между кнопками */
+      margin-top: 10px; /* отступ сверху */
     }
   </style>
 </head>
 <body>
-  <h1 class="site-title">Управление оффлайн-заведениями</h1>
+  <div class="container">
+    <h2>Wolt Cash Debt Checker Tool</h2>
+    
+    <!-- Переключатель темы -->
+    <label class="switch">
+      <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+      <span class="slider round">
+        <span class="sun">☀️</span>
+        <span class="moon">🌙</span>
+      </span>
+    </label>
 
-  <!-- Основная «карточка» (контейнер) -->
-  <div class="card">
-    <!-- Форма для добавления заведения -->
-    <div class="form-section">
-      <h2>Добавить заведение</h2>
-      <form id="addEstablishmentForm">
-        <label>
-          Имя заведения:
-          <input type="text" id="name" required>
-        </label>
-        <label>
-          Ссылка:
-          <input type="url" id="url" required>
-        </label>
-        <label>
-          Время оффлайн (в минутах):
-          <input type="number" id="offlineTime" required>
-        </label>
-        <label>
-          Причина перевода в оффлайн:
-          <select id="reason" required>
-            <option value="" disabled selected>Выберите причину</option>
-            <option value="Integration issues / Tech issues">Integration issues / Tech issues</option>
-            <option value="Venue sets itself online">Venue sets itself online</option>
-          </select>
-        </label>
-        <button type="submit">Добавить заведение</button>
-      </form>
+    <!-- Дроп-зона (кликабельная) -->
+    <div class="drop-zone" id="dropZone" onclick="document.getElementById('hiddenFileInput').click();">
+      <p><i class="fas fa-cloud-upload-alt fa-2x"></i></p>
+      <p>Перетащите CSV, PDF или JSON файл сюда<br>или кликните, чтобы выбрать файл</p>
     </div>
 
-    <!-- Дэшбоард с двумя разделами: Активные и История -->
-    <div class="dashboard">
-      <h2>Активные заведения</h2>
-      <table id="activeTable">
-        <thead>
-          <tr>
-            <th>Имя заведения</th>
-            <th>Причина</th>
-            <th>Ссылка</th>
-            <th>Оставшееся время</th>
-            <th>Действия</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Активные заведения подставляются динамически -->
-        </tbody>
-      </table>
-      
-      <h2>История (Истекшие заведения)</h2>
-      <table id="historyTable">
-        <thead>
-          <tr>
-            <th>Имя заведения</th>
-            <th>Причина</th>
-            <th>Ссылка</th>
-            <th>Оффлайн до</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- История подставляется динамически -->
-        </tbody>
-      </table>
+    <!-- Скрытый input для клика -->
+    <input type="file" id="hiddenFileInput" accept=".csv,.pdf,.json" style="display: none;" onchange="processFileFromInput()" />
+
+    <div class="button-container">
+      <button id="openAllButton" style="display:none;" onclick="openAllLinks()">
+        <i class="fas fa-external-link-alt"></i> Open all links
+      </button>
+      <button id="copyLinksButton" style="display:none;" onclick="copyLinks()">
+        <i class="fas fa-copy"></i> Copy all links
+      </button>
+      <button id="downloadCSVButton" style="display:none;" onclick="downloadCSV()">
+        <i class="fas fa-download"></i> Download CSV for bulk
+      </button>
     </div>
+    
+    <input type="text" id="searchInput" list="courierSuggestions" placeholder="Search for courier ID..." onkeyup="filterCouriers()" style="display: none;">
+    <datalist id="courierSuggestions"></datalist>
+
+    <div id="loading">Processing file...</div>
+    <div id="output"></div>
   </div>
-  
+
   <script>
-    // ===================== 1. ИНИЦИАЛИЗАЦИЯ FIREBASE =====================
-    const firebaseConfig = {
-      apiKey: "AIzaSyBaQYzQmld5VNA_wSI8nDtqENN0TgcNqeA",
-      authDomain: "adminsonly.firebaseapp.com",
-      databaseURL: "https://adminsonly-default-rtdb.firebaseio.com",
-      projectId: "adminsonly",
-      storageBucket: "adminsonly.firebasestorage.app",
-      messagingSenderId: "194528429901",
-      appId: "1:194528429901:web:805ca2f1dd0feca2de1904"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    // Инициализация pdf.js
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
 
-    // ===================== 2. SLACK WEBHOOK =====================
-    const slackWebhookURL = "https://hooks.slack.com/triggers/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";
-    function sendWebhook(text) {
-      fetch(slackWebhookURL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: text })
-      })
-      .then(() => console.log("Вебхук отправлен."))
-      .catch(err => console.error("Ошибка вебхука:", err));
+    let courierLinks = [];
+    let courierIds = [];
+
+    // ----- ОБРАБОТКА ФАЙЛА ПРИ КЛИКЕ -----
+    function processFileFromInput() {
+      const fileInput = document.getElementById('hiddenFileInput');
+      if (!fileInput.files.length) return;
+      const file = fileInput.files[0];
+      detectFileAndProcess(file);
     }
 
-    // ===================== 3. ДОБАВЛЕНИЕ ЗАВЕДЕНИЯ =====================
-    function addEstablishment(establishment) {
-      const newRef = db.ref("establishments").push();
-      establishment.id = newRef.key;
-      newRef.set(establishment, error => {
-        if (!error) {
-          const text = `Добавлено заведение: ${establishment.name}.
-Ссылка: ${establishment.url}.
-Оффлайн до: ${new Date(establishment.offlineUntil).toLocaleString()}.
-Причина: ${establishment.reason}`;
-          sendWebhook(text);
-        } else {
-          console.error("Ошибка сохранения:", error);
-        }
-      });
+    // ----- ОБРАБОТКА ФАЙЛА ПРИ DRAG & DROP -----
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+    dropZone.addEventListener('dragleave', function(e) {
+      dropZone.classList.remove('dragover');
+    });
+    dropZone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      let files = e.dataTransfer.files;
+      if (!files.length) return;
+      detectFileAndProcess(files[0]);
+    });
+
+    // ----- ОПРЕДЕЛЕНИЕ ТИПА ФАЙЛА -----
+    function detectFileAndProcess(file) {
+      resetOutput();
+      const ext = file.name.split('.').pop().toLowerCase();
+      if (ext === 'csv') {
+        processCSVFile(file);
+      } else if (ext === 'pdf') {
+        processPDFFile(file);
+      } else if (ext === 'json') {
+        processJSONFile(file);
+      } else {
+        alert('Unsupported file type: ' + file.name);
+      }
     }
 
-    // ===================== 4. ПОДПИСКА НА ИЗМЕНЕНИЯ =====================
-    function subscribeToDashboard() {
-      db.ref("establishments").on("value", snapshot => {
-        const data = snapshot.val();
-        const allEstablishments = data ? Object.values(data) : [];
-        renderDashboards(allEstablishments);
-      });
-    }
-
-    // ===================== 5. ОТРИСОВКА ДЭШБОАРДА =====================
-    function renderDashboards(establishments) {
-      const activeTbody = document.getElementById("activeTable").querySelector("tbody");
-      const historyTbody = document.getElementById("historyTable").querySelector("tbody");
-      activeTbody.innerHTML = "";
-      historyTbody.innerHTML = "";
-      
-      establishments.forEach(est => {
-        if (est.expired) {
-          // Запись в историю
-          const tr = document.createElement("tr");
-
-          const tdName = document.createElement("td");
-          tdName.textContent = est.name;
-          tr.appendChild(tdName);
-
-          const tdReason = document.createElement("td");
-          tdReason.textContent = est.reason || "";
-          tr.appendChild(tdReason);
-
-          const tdUrl = document.createElement("td");
-          const link = document.createElement("a");
-          link.href = est.url;
-          link.target = "_blank";
-          link.textContent = "Ссылка";
-          tdUrl.appendChild(link);
-          tr.appendChild(tdUrl);
-
-          const tdOfflineUntil = document.createElement("td");
-          tdOfflineUntil.textContent = new Date(est.offlineUntil).toLocaleString();
-          tr.appendChild(tdOfflineUntil);
-
-          historyTbody.appendChild(tr);
-        } else {
-          // Активная запись
-          const tr = document.createElement("tr");
-          
-          const tdName = document.createElement("td");
-          tdName.textContent = est.name;
-          tr.appendChild(tdName);
-
-          const tdReason = document.createElement("td");
-          tdReason.textContent = est.reason || "";
-          tr.appendChild(tdReason);
-
-          const tdUrl = document.createElement("td");
-          const link = document.createElement("a");
-          link.href = est.url;
-          link.target = "_blank";
-          link.textContent = "Ссылка";
-          tdUrl.appendChild(link);
-          tr.appendChild(tdUrl);
-          
-          const tdTimer = document.createElement("td");
-          tdTimer.id = "timer-" + est.id;
-          tr.appendChild(tdTimer);
-          
-          const tdAction = document.createElement("td");
-          const addTimeBtn = document.createElement("button");
-          addTimeBtn.textContent = "Добавить время";
-          addTimeBtn.addEventListener("click", function() {
-            addExtraTime(est.id);
-          });
-          tdAction.appendChild(addTimeBtn);
-          tr.appendChild(tdAction);
-          
-          activeTbody.appendChild(tr);
-        }
-      });
-    }
-
-    // ===================== 6. ОБНОВЛЕНИЕ ТАЙМЕРОВ =====================
-    function updateTimers() {
-      db.ref("establishments").once("value", snapshot => {
-        const data = snapshot.val();
-        if (data) {
-          Object.values(data).forEach(est => {
-            if (!est.expired) {
-              const timerTd = document.getElementById("timer-" + est.id);
-              if (timerTd) {
-                const now = new Date();
-                const offlineUntil = new Date(est.offlineUntil);
-                const remainingMs = offlineUntil - now;
-                if (remainingMs > 0) {
-                  const minutes = Math.floor(remainingMs / 60000);
-                  const seconds = Math.floor((remainingMs % 60000) / 1000);
-                  timerTd.textContent = `${minutes} мин ${seconds} сек`;
-                } else {
-                  timerTd.textContent = "Время истекло";
-                  db.ref("establishments/" + est.id).update({ expired: true }, error => {
-                    if (!error) {
-                      const text = `Оффлайн время истекло для заведения: ${est.name}.
-(${est.url})
-Причина: ${est.reason}`;
-                      sendWebhook(text);
-                    }
-                  });
-                }
+    // ----- ОБРАБОТКА CSV (колонка "courierIds") -----
+    function processCSVFile(file) {
+      document.getElementById('loading').style.display = 'block';
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        document.getElementById('loading').style.display = 'none';
+        const text = event.target.result;
+        const lines = text.split('\n');
+        if (lines.length > 0) {
+          // Заголовок
+          const header = lines[0].split(',');
+          // Ищем индекс колонки "courierIds" (или "courier_ids")
+          const courierIdIndex = header.findIndex(col => col.trim().toLowerCase() === "courierids" || col.trim().toLowerCase() === "courier_ids");
+          if (courierIdIndex === -1) {
+            alert("Колонка 'courierIds' не найдена в CSV!");
+            return;
+          }
+          for (let i = 1; i < lines.length; i++) {
+            let columns = lines[i].split(',');
+            if (columns.length > courierIdIndex) {
+              let idCell = columns[courierIdIndex].trim();
+              if (idCell !== "" && !isNaN(idCell)) {
+                addCourierId(idCell);
               }
             }
-          });
+          }
         }
-      });
-    }
-
-    // ===================== 7. ДОБАВЛЕНИЕ ДОПОЛНИТЕЛЬНОГО ВРЕМЕНИ =====================
-    function addExtraTime(id) {
-      const additionalTime = prompt("Введите дополнительное время в минутах:");
-      if (!additionalTime) return;
-      const additionalMs = parseInt(additionalTime, 10) * 60 * 1000;
-      const ref = db.ref("establishments/" + id);
-      ref.once("value", snapshot => {
-        const est = snapshot.val();
-        if (est) {
-          const newOfflineUntil = new Date(new Date(est.offlineUntil).getTime() + additionalMs);
-          // Обновляем время и снимаем флаг expired, чтобы заведение вернулось в активные
-          ref.update({ offlineUntil: newOfflineUntil, expired: false }, error => {
-            if (!error) {
-              const text = `Для заведения ${est.name} добавлено дополнительное время (${additionalTime} мин).
-Новый оффлайн до: ${newOfflineUntil.toLocaleString()}.
-Причина: ${est.reason}`;
-              sendWebhook(text);
-            }
-          });
-        }
-      });
-    }
-
-    // ===================== 8. ИНИЦИАЛИЗАЦИЯ =====================
-    window.addEventListener("load", () => {
-      subscribeToDashboard();
-      setInterval(updateTimers, 1000);
-    });
-
-    // ===================== 9. ОБРАБОТКА ФОРМЫ =====================
-    document.getElementById("addEstablishmentForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const name = document.getElementById("name").value;
-      const url = document.getElementById("url").value;
-      const offlineTimeMinutes = parseInt(document.getElementById("offlineTime").value, 10);
-      const reason = document.getElementById("reason").value;  
-      const now = new Date();
-      const offlineUntil = new Date(now.getTime() + offlineTimeMinutes * 60 * 1000);
-      
-      const establishment = {
-        name: name,
-        url: url,
-        offlineUntil: offlineUntil.toISOString(),
-        addedOfflineTime: offlineTimeMinutes,
-        reason: reason,
-        expired: false
+        showResults();
       };
-      
-      addEstablishment(establishment);
-      e.target.reset();
-    });
+      reader.readAsText(file);
+    }
+
+    // ----- ОБРАБОТКА PDF -----
+    async function processPDFFile(file) {
+      document.getElementById('loading').style.display = 'block';
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let textContentAll = '';
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          const page = await pdf.getPage(pageNum);
+          const textContent = await page.getTextContent();
+          const pageText = textContent.items.map(item => item.str).join(' ');
+          textContentAll += pageText + '\n';
+        }
+        // Ищем айди курьеров: шаблон (число пробел число(6+))
+        const regex = /(\d+)\s+(\d{6,})/g;
+        let match;
+        while ((match = regex.exec(textContentAll)) !== null) {
+          let id = match[2];
+          addCourierId(id);
+        }
+        document.getElementById('loading').style.display = 'none';
+        showResults();
+      } catch (error) {
+        console.error(error);
+        alert('Ошибка при чтении PDF-файла.');
+        document.getElementById('loading').style.display = 'none';
+      }
+    }
+
+    // ----- ОБРАБОТКА JSON + КОНВЕРТАЦИЯ В CSV -----
+    function processJSONFile(file) {
+      document.getElementById('loading').style.display = 'block';
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        try {
+          const jsonData = JSON.parse(event.target.result);
+          if (isDisableCouriersStructure(jsonData)) {
+            showDisableCouriersResults(jsonData);
+          } else {
+            const csv = convertGenericJSONtoCSV(jsonData);
+            document.getElementById('loading').style.display = 'none';
+            const outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = '<h3>Converted CSV:</h3><textarea id="csvOutput" rows="10" style="width:100%;">' + csv + '</textarea>';
+            const downloadBtn = document.createElement("button");
+            downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download Converted CSV';
+            downloadBtn.onclick = function() {
+              downloadConvertedCSV(csv);
+            };
+            outputDiv.appendChild(downloadBtn);
+          }
+        } catch (error) {
+          alert("Ошибка при обработке JSON: " + error.message);
+          document.getElementById('loading').style.display = 'none';
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function isDisableCouriersStructure(json) {
+      return (
+        Array.isArray(json.successfulIds) &&
+        Array.isArray(json.failures) &&
+        typeof json.operationType === 'string'
+      );
+    }
+
+    // ----- Функция для отображения результатов из DisableCouriers JSON -----
+    // Отображаются два списка: успешные и неуспешные (только айди)
+    // Для неуспешных добавлены кнопки: открыть все и скопировать все ссылки
+    function showDisableCouriersResults(jsonData) {
+      document.getElementById('loading').style.display = 'none';
+      const outputDiv = document.getElementById('output');
+      outputDiv.innerHTML = '';
+
+      // ----- Успешные курьеры -----
+      const successHeader = document.createElement('h3');
+      successHeader.innerText = "Successful IDs:";
+      outputDiv.appendChild(successHeader);
+
+      jsonData.successfulIds.forEach(id => {
+        const link = document.createElement('a');
+        link.href = `https://ops.wolt.com/couriers/${id}`;
+        link.target = '_blank';
+        link.innerText = id;
+        const box = document.createElement('div');
+        box.className = 'courier-box';
+        box.appendChild(link);
+        outputDiv.appendChild(box);
+      });
+
+      const successDownloadBtn = document.createElement("button");
+      successDownloadBtn.innerHTML = '<i class="fas fa-download"></i> Download Successful CSV';
+      successDownloadBtn.onclick = function() {
+        const csv = convertSuccessfulCSV(jsonData.successfulIds);
+        downloadConvertedCSV(csv, "successful.csv");
+      };
+      outputDiv.appendChild(successDownloadBtn);
+
+      // ----- Неуспешные курьеры -----
+      const failureHeader = document.createElement('h3');
+      failureHeader.innerText = "Unsuccessful IDs:";
+      outputDiv.appendChild(failureHeader);
+
+      jsonData.failures.forEach(failure => {
+        const link = document.createElement('a');
+        link.href = `https://ops.wolt.com/couriers/${failure.courierId}`;
+        link.target = '_blank';
+        link.innerText = failure.courierId;
+        const box = document.createElement('div');
+        box.className = 'courier-box';
+        box.appendChild(link);
+        outputDiv.appendChild(box);
+      });
+
+      // --- Создаём контейнер для кнопок неуспешных курьеров ---
+      const failuresButtonsContainer = document.createElement("div");
+      failuresButtonsContainer.className = "failures-button-container";
+
+      // Кнопка открыть все неуспешные
+      const openUnsuccessfulBtn = document.createElement("button");
+      openUnsuccessfulBtn.innerHTML = '<i class="fas fa-external-link-alt"></i> Open all unsuccessful links';
+      openUnsuccessfulBtn.onclick = function() {
+          jsonData.failures.forEach(f => {
+              const url = `https://ops.wolt.com/couriers/${f.courierId}`;
+              window.open(url, '_blank');
+          });
+      };
+      failuresButtonsContainer.appendChild(openUnsuccessfulBtn);
+
+      // Кнопка скопировать все неуспешные
+      const copyUnsuccessfulBtn = document.createElement("button");
+      copyUnsuccessfulBtn.innerHTML = '<i class="fas fa-copy"></i> Copy all unsuccessful links';
+      copyUnsuccessfulBtn.onclick = function() {
+          let links = jsonData.failures.map(f => `https://ops.wolt.com/couriers/${f.courierId}`).join('\n');
+          navigator.clipboard.writeText(links).then(() => {
+              alert('Unsuccessful links copied to clipboard!');
+          });
+      };
+      failuresButtonsContainer.appendChild(copyUnsuccessfulBtn);
+
+      // Кнопка скачать неуспешные
+      const failuresDownloadBtn = document.createElement("button");
+      failuresDownloadBtn.innerHTML = '<i class="fas fa-download"></i> Download Unsuccessful CSV';
+      failuresDownloadBtn.onclick = function() {
+        const csv = convertFailuresCSV(jsonData.failures);
+        downloadConvertedCSV(csv, "failures.csv");
+      };
+      failuresButtonsContainer.appendChild(failuresDownloadBtn);
+
+      // Добавляем контейнер с тремя кнопками в output
+      outputDiv.appendChild(failuresButtonsContainer);
+    }
+
+    function convertSuccessfulCSV(successfulIds) {
+      let csvRows = [];
+      csvRows.push("courierIds");
+      successfulIds.forEach(id => {
+        csvRows.push(id);
+      });
+      return csvRows.join("\n");
+    }
+
+    // Функция конвертации неуспешных – выводим только courierId
+    function convertFailuresCSV(failures) {
+      let csvRows = [];
+      csvRows.push("courierIds");
+      failures.forEach(f => {
+        csvRows.push(f.courierId);
+      });
+      return csvRows.join("\n");
+    }
+
+    // Универсальная функция для «обычного» JSON
+    function convertGenericJSONtoCSV(jsonData) {
+      let arr = Array.isArray(jsonData) ? jsonData : [jsonData];
+      if (arr.length === 0) return "";
+      const keys = Object.keys(arr[0]);
+      const csvRows = [];
+      csvRows.push(keys.join(','));
+      for (let obj of arr) {
+        const row = keys.map(k => {
+          let val = obj[k];
+          if (typeof val === 'object') {
+            val = JSON.stringify(val);
+          }
+          if (typeof val === 'string') {
+            val = '"' + val.replace(/"/g, '""') + '"';
+          }
+          return val;
+        });
+        csvRows.push(row.join(','));
+      }
+      return csvRows.join('\n');
+    }
+
+    function downloadConvertedCSV(csvContent, filename) {
+      filename = filename || "converted.csv";
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+    }
+
+    // ---------- Общая логика для курьеров (CSV/PDF) ----------
+    function addCourierId(id) {
+      courierIds.push(id);
+      courierLinks.push(`https://ops.wolt.com/couriers/${id}`);
+    }
+    function showResults() {
+      if (courierIds.length > 0) {
+        document.getElementById('searchInput').style.display = 'block';
+        const outputDiv = document.getElementById('output');
+        outputDiv.innerHTML = '<h3>Courier IDs:</h3>';
+        courierIds.forEach((id, index) => {
+          const a = document.createElement('a');
+          a.href = courierLinks[index];
+          a.target = '_blank';
+          a.innerText = `${index + 1}. courier_id_${id}`;
+          const box = document.createElement('div');
+          box.className = 'courier-box';
+          box.appendChild(a);
+          outputDiv.appendChild(box);
+        });
+        document.getElementById('openAllButton').style.display = 'block';
+        document.getElementById('copyLinksButton').style.display = 'block';
+        document.getElementById('downloadCSVButton').style.display = 'block';
+
+        let datalist = document.getElementById("courierSuggestions");
+        datalist.innerHTML = "";
+        courierIds.forEach(id => {
+          let option = document.createElement("option");
+          option.value = id;
+          datalist.appendChild(option);
+        });
+      } else {
+        document.getElementById('output').innerHTML = '<p>Не найдены айди курьеров.</p>';
+      }
+    }
+    function resetOutput() {
+      document.getElementById('output').innerHTML = '';
+      document.getElementById('searchInput').value = '';
+      document.getElementById('searchInput').style.display = 'none';
+      courierLinks = [];
+      courierIds = [];
+    }
+    function filterCouriers() {
+      let input = document.getElementById('searchInput').value.toLowerCase();
+      let boxes = document.getElementsByClassName('courier-box');
+      for (let box of boxes) {
+        if (box.innerText.toLowerCase().includes(input)) {
+          box.style.display = '';
+        } else {
+          box.style.display = 'none';
+        }
+      }
+    }
+    function openAllLinks() {
+      courierLinks.forEach(link => {
+        window.open(link, '_blank');
+      });
+    }
+    function copyLinks() {
+      navigator.clipboard.writeText(courierLinks.join('\n')).then(() => {
+        alert('Все ссылки скопированы в буфер обмена!');
+      });
+    }
+    function downloadCSV() {
+      let csvContent = "courierIds\n" + courierIds.join("\n");
+      let blob = new Blob([csvContent], { type: 'text/csv' });
+      let link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "courier_ids.csv";
+      link.click();
+    }
+
+    // ---------- Переключатель темы ----------
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+      if (document.body.classList.contains('dark-mode')) {
+        localStorage.setItem('theme', 'dark');
+      } else {
+        localStorage.setItem('theme', 'light');
+      }
+    }
+    window.onload = function () {
+      let themeToggle = document.getElementById('themeToggle');
+      if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-mode');
+        themeToggle.checked = true;
+      }
+    };
   </script>
 </body>
 </html>
